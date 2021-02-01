@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+<div id="status"></div>
+<script type="text/javascript" src="/static/js/jquery-1.7.2.min.js"></script>
+<script type="text/javascript">
+	var curStatus = '';
+	window.setInterval(function() {
+		$.ajax({
+			type: "GET",
+			url: "app_download_progress"
+		})
+		.done(function(response) {
+			if(response != curStatus) {
+				curStatus = response;
+				var content = '<p>' + response + '</p>';
+				$(content).appendTo("#status");
+			}
+		});
+	}, 500);
+</script>
+</body>
+</html>

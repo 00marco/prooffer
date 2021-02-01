@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body style="margin:0px;padding:0px">
+<span style="color:white;margin:0px;padding:0px" id="sync_status"></span>
+<script type="text/javascript" src="/static/js/jquery-1.7.2.min.js"></script>
+<script type="text/javascript">
+	var sync = function() {
+		var syncedCount = 0;
+		$('#sync_status').text('Synced ' + syncedCount + ' of 5');
+		$.ajax({
+			type: "GET",
+			url: "syncProofferDataDownStream",
+		})
+		.done(function(response) {
+			syncedCount = syncedCount + 1;
+			$('#sync_status').text('Synced ' + syncedCount + ' of 5');
+		});
+		
+		$.ajax({
+			type: "GET",
+			url: "syncProofferUsersDownStream",
+		})
+		.done(function(response) {
+			syncedCount = syncedCount + 1;
+			$('#sync_status').text('Synced ' + syncedCount + ' of 5');
+		});
+		
+		$.ajax({
+			type: "GET",
+			url: "syncProofferProjectsDownStream",
+		})
+		.done(function(response) {
+			syncedCount = syncedCount + 1;
+			$('#sync_status').text('Synced ' + syncedCount + ' of 5');
+		});
+		
+		$.ajax({
+			type: "GET",
+			url: "syncProofferUsersUpStream",
+		})
+		.done(function(response) {
+			syncedCount = syncedCount + 1;
+			$('#sync_status').text('Synced ' + syncedCount + ' of 5');
+		});
+		
+		$.ajax({
+			type: "GET",
+			url: "syncProofferProjectsUpStream",
+		})
+		.done(function(response) {
+			syncedCount = syncedCount + 1;
+			$('#sync_status').text('Synced ' + syncedCount + ' of 5');
+		});
+	};
+	sync();
+</script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="/static/lib/bootstrap/css/bootstrap.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/lib/bootstrap/css/bootstrap-responsive.css"/>
+    <style>
+        body { background: #efefef }
+        iframe { height: 30px; width: 100%; border-style: none; float: right; background: #2E3436; margin-bottom: 40px}
+    </style>
+</head>
+<body>
+<!--div>
+    <iframe scrolling="no" src="http://localhost:5984/prooffer_sync/_design/update/sync.html"></iframe>
+    <div class="clearfix"></div>
+</div-->
+<p id="status" class="row-fluid">Checking user privileges...</p>
+<div class="row-fluid">
+    <ul id="privileges" class="nav nav-list nav-stacked offset5"></ul>
+</div>
+</body>
+<script type="text/javascript" src="/static/js/jquery-1.7.2.min.js"></script>
+<script type="text/javascript">
+    $.ajax({
+        type: "GET",
+        url: 'getUserPrivileges',
+    })
+    .done(function(response) {
+        user = JSON.parse(response);
+        if(user.privileges.length > 0) {
+            $("#status").html("<h4 class='span2 offset5'>Run as:</h4>");
+            for(var i = 0; i < user.privileges.length; i++) {
+                $("#privileges").append("<li><button class='btn btn-primary btn-large' style='margin-bottom: 10px' onclick=\"launch('" + user.app_url + "','" + user.privileges[i]['id'] + "')\">" + user.privileges[i]['name'] + "</button></li>");
+            }
+        }
+        else {
+            $("#status").text("no user data is available, just let the updating finish then click the refresh button");
+        }    
+    })
+    .fail(function(response) {
+    
+    })
+</script>
+<script type="text/javascript">
+    function launch(app_url,privilege) { 
+        $.ajax({
+            type: "GET",
+            url: 'setUserPrivilege',
+            dataType: 'text',
+            data: { privilege: privilege},
+        })
+        .done(function(response) {
+            window.location = app_url;
+        })
+    }
+</script>
+</html>

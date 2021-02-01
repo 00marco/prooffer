@@ -1,0 +1,750 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Order Confirmation</title>
+    <link rel="stylesheet" type="text/css" href="/static/css/style.css"/>
+	
+</head>
+ 
+<body>
+    <div id="header" class="full-width">
+        <div class="app-title full-width">
+       
+	   <h1>Order Confirmation 1.0.2</h1>
+            <div data-bind="if: hasStarted">
+                <span data-bind="text: projectNumber"></span>
+                <span data-bind="if: machineName" class="spacer">:</span>
+                <span data-bind="text: machineName"></span>
+            </div> 
+        </div>
+        <div data-bind="if: hasStarted" class="navigation full-width">
+            <ul class="full-width" data-bind="foreach: stages">
+                <li data-bind="css: { navselected: $data == $parent.currentStageId()},
+                               click: $parent.gotoStage">
+                               <a class="nav-button">
+                                    <span class="nav-label" style="vertical-align: middle" data-bind="text: $data, attr: {title: $data}"></span>
+                               </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+	<div id="content" class="full-width" data-bind="template: { name: currentStageId()}"></div>
+    <script type="text/html" id="Start">
+        <div class="stage">
+            <div class="clear-float"></div>
+			<div class="quote-table-header">
+				<div style="float:left;width:80%" >
+					<ul >
+						<li style="width:10%">
+							<div class="header-text" >Last Modified</div>
+						</li>
+						<li style="width:20%">
+							<div class="header-text">User Code</div>
+							
+							<div>
+								<select style="width:100%" data-bind="value: startOptions.creatorFilter, options: startOptions.creators"></select>
+							</div>
+						</li>
+						<li style="width:10%">
+							<div class="header-text">Country</div>
+							<div>
+								<input style="width:100%" list="countries" data-bind="value: startOptions.countryFilter"></input>
+								<datalist id="countries"> 
+									<!-- ko foreach: startOptions.countries -->
+										<option data-bind="text: $data"></option>
+									<!-- /ko -->
+								</datalist>
+							</div>
+						</li>
+						<li style="width:40%">
+							<div class="header-text">Company Name</div>
+							<div>
+								<input style="width:100%" list="companyNames" data-bind="value: startOptions.companyNameFilter"></input>
+								<datalist id="companyNames"> 
+									<!-- ko foreach: startOptions.companyNames -->
+										<option data-bind="text: $data"></option>
+									<!-- /ko -->
+								</datalist>
+							</div>
+						</li>
+						<li style="width:15%">
+							<div class="header-text" >Machine Name</div>
+							<div>
+								<input style="width:100%" list="machineNames" data-bind="value: startOptions.machineNameFilter"></input>
+								<datalist id="machineNames"> 
+									<!-- ko foreach: startOptions.machineNames -->
+										<option data-bind="text: $data"></option>
+									<!-- /ko -->
+								</datalist>
+							</div>
+						</li>
+					</ul>		
+				</div>	
+			</div>
+			<div class="clear-float"></div>
+            <div class="project-table-container">
+                <table class="quote-table">
+                    <tr></tr>
+                    <!-- ko foreach: startOptions.projectList -->
+                    <tr data-bind="visible: $data.createdby == $root.startOptions.creatorFilter() &&
+											($root.startOptions.countryFilter() == '' ? true : $data.country == $root.startOptions.countryFilter()) &&
+											($root.startOptions.companyNameFilter() == '' ? true : $data.companyName == $root.startOptions.companyNameFilter()) &&
+											($root.startOptions.machineNameFilter() == '' ? true : $data.machineName == $root.startOptions.machineNameFilter()) &&
+											($root.startOptions.contactPersonFilter() == '' ? true : $data.contactPerson == $root.startOptions.contactFilter())">
+						<td style="width:80%">
+							<ul class="quote-options">
+								<li style="width:10%" data-bind="css: { selected: $data.projectName == $parent.startOptions.selectedQuote() },
+													  click: $parent.startOptions.selectExistingQuote,
+													  text: $data.lastmodifiedby + '@' + $data.lastmodified">
+                                </li>
+								<li style="width:20%" data-bind="css: { selected: $data.projectName == $parent.startOptions.selectedQuote() },
+													  click: $parent.startOptions.selectExistingQuote,
+													  text: $data.projectName">
+								</li>
+								<li style="width:10%" data-bind="css: { selected: $data.projectName == $parent.startOptions.selectedQuote() },
+													  click: $parent.startOptions.selectExistingQuote,
+													  text: $data.country">
+								</li>
+								<li style="width:40%" data-bind="css: { selected: $data.projectName == $parent.startOptions.selectedQuote() },
+													  click: $parent.startOptions.selectExistingQuote,
+													  text: $data.companyName">
+								</li>
+								<li style="width:10%" data-bind="css: { selected: $data.projectName == $parent.startOptions.selectedQuote() },
+													  click: $parent.startOptions.selectExistingQuote,
+													  text: $data.machineName">
+								</li>
+							</ul>
+						</td>
+                        <td style="width:20%">
+                            <ul class="quote-options">   
+								<!-- ko if: $data.ordcon == 1 -->								
+                                <li><a data-bind="click: $root.startOptions.openOrderConfirmation">Open Order Confirmation</a></li>
+                                <!-- /ko -->
+                                <!-- ko if: $data.ordcon == 0 -->
+                                <li><a data-bind="click: $root.startOptions.createOrderConfirmation">Create Order Confirmation</a></li>
+                                <!-- /ko -->								
+                            </ul>
+                        </td>
+                    </tr>
+                    <!-- /ko -->
+                </table>
+            </div>
+        </div>
+    </script>
+	<script type="text/html" id="OrderConfirmation">
+		<div class="button-bar">
+			<a class="button button-medium" data-bind="click: order.createOrderConfirmation, disable: order.isContractDirty, css: { disabled: order.isContractDirty() == true}">Create Order Confirmation</a>
+			<a class="button button-medium" data-bind="click: order.previewOrderConfirmation, disable: order.isContractDirty, css: { disabled: order.isContractDirty() == true}">Preview Order Confirmation</a>
+			<a class="button button-medium" data-bind="click: order.save, enable: order.isContractDirty, css: { disabled: order.isContractDirty() == false}"><span data-bind="text: order.saveLabel">&nbsp;</span></a>
+			<p><span><input type="checkbox" data-bind="checked: order.contract.external"></input></span>Use External/Customer Agreement</p>
+		</div>
+		<div class="stage">
+            <div id="throbber">
+                <h2>Generating Order Confirmation...</h2>
+                <img src='/static/img/ajax-loader.gif'></img>
+            </div>  
+            <div class="sidebar" style="width:400px">          
+				<div class="visibility-options">
+					<div data-bind="visible: !order.contract.external()">
+					<h4 style="text-align:center"><span data-bind="text: order.contract.title">&nbsp;</span></h4>
+					<p><span><input type="checkbox" disabled checked></input></span>Introduction</p>
+					<p><span><input type="checkbox" disabled checked></input></span>Scope of supply</p>
+					
+					<p><span><input type="checkbox" disabled checked></input></span>Contract price</p>
+					<p><span><input type="checkbox" disabled checked></input></span>Terms of payment</p>
+					<p><span><input type="checkbox" disabled checked></input></span>Delivery time</p>
+					<p><span><input type="checkbox" disabled checked></input></span>HGG General Terms and Conditions</p>
+					<p><span><input type="checkbox" data-bind="checked: order.contract.settings.gtc_amendments"></input></span>Amendments to HGG General Terms and Conditions</p>
+					<p><span><input type="checkbox" disabled checked></input></span>HGG Warranty Terms and Conditions</p>
+					<p><span><input type="checkbox" data-bind="checked: order.contract.settings.wtc_amendments"></input></span>Amendments to HGG Warranty Terms and Conditions</p>
+					<h4 style="text-align:center">Appendices (visibility options)</h4>
+					</div>
+					<div style="width: 600pt; font-size: 16px">
+					<div id="appendices">
+					<div data-bind="foreach: project.visibilityOptions">
+						<div data-bind="if: $data.include && !($data.title == 'Cover Page' || $data.title == 'Introduction'|| $data.title == 'Product Description Introduction')">Appendix <span data-bind="text: ($root.order.getAppendixN()||'?') + ': ' + $data.title">&nbsp;</span></div>
+					</div>					
+					</div>
+					</div>
+				</div>                
+            </div>	
+            <div class="offerview" id="contract-content" style="left:401px">
+			<div data-bind="visible: !order.contract.external()">
+				<style type="text/css">.editable {background: yellow;}</style>
+				<div id="title">
+					<div>
+					<p>Title: <span><select data-bind="value: order.contract.title, options: ['Order Confirmation', 'Contract', 'Agreement']"></select></span></p>
+					<p>Incoterms: <span><select data-bind="value: order.contract.incoterms, options: ['EXW','FCA','CPT','CIP','DAP','DDP','FOB','CFR','CIF']"></select></span></p>
+					</div>					
+					<div class="clear-float"></div>
+				</div>
+				<div class="chapterHeader" id="introduction">
+					<label>Introduction</label>
+				</div>
+				
+				<div style="width: 600pt; font-size: 16px">
+				<div id="introduction_content">
+					<p>This <span data-bind="text: order.contract.title">&nbsp;</span> is made 
+						<span id="day"><input type="text" size="2" style="text-align:center" data-bind="value: order.contract.introduction.day"></input></span>&nbsp;day of&nbsp;
+						<span id="month_year"><input type="text" placeholder="MONTH, YEAR" style="text-align:center" data-bind="value: order.contract.introduction.month_year"></input></span> under HGG reference 
+						<span id="project_number"><input type="text" placeholder="HGG INTERNAL PROJECT NUMBER" size="40" style="text-align:center" data-bind="value: order.contract.introduction.project_number"></input></span>					
+						<span id="customer_reference"><span data-bind="style:{ color: order.contract.introduction.customer_reference().length > 0 ? 'black' : 'lightgray'}">and Customer reference</span>
+						<input type="text" placeholder="CUSTOMER REFERENCE NUMBER" size="40" style="text-align:center" data-bind="value: order.contract.introduction.customer_reference"></input></span>
+					</p>
+					<br/>
+					<p>between</p>
+					<br/>
+					<p>
+						<span id="fullname">
+							<input type="text" placeholder="PURCHASERS FULL NAME" size="30" style="text-align:center" data-bind="value: order.contract.introduction.fullname"></input>
+						</span>
+						, with its registered office at 
+						<span id="address">
+							<input type="text" placeholder="ADDRESS, PROVINCE, STATE, COUNTRY" size="60" style="text-align:center" data-bind="value: order.contract.introduction.address"></input>
+						</span>
+						(here in after referred to as the "Buyer");
+					</p>
+					<br/>
+					<p>and</p>
+					<br/>
+					<p><span id="contractor">
+						<select data-bind="value: order.contract.introduction.contractor, options: ['HGG PROFILING EQUIPMENT BV', 'HGG PROJECT BV']"></select>
+						</span>, with its registered office at Zuidrak 2 1771 SW Wieringerwerf the Netherlands (here in after referred to as the "Supplier ");
+					</p>
+					<br/>
+					<p>WHEREAS Buyer is engaged in the purchase of 
+						<span id="qty">
+							<input type="text" placeholder="QUANTITY" size="10" style="text-align:center" data-bind="value: order.contract.introduction.qty"></input>
+						</span>&nbsp;(
+						<span id="qty_words">
+							<input type="text" placeholder="QUANTITY IN WORDS" size="20" style="text-align:center" data-bind="value: order.contract.introduction.qty_words"></input>
+						</span>) no. CNC cutting machine; <span data-bind="text: $root.project.machine.machineName">&nbsp;</span>
+						(here in after referred to as the "Equipment").
+					</p>
+                    <textarea id="extratexts_introduction" style="width:800px;height:150px; font-size: 14px" data-bind="richText1: order.contract.extratexts.introduction"></textarea>
+					
+				</div>
+				</div>
+				<div>
+					<div class="chapterHeader" id="scope_of_supply">
+						<label>Scope of Supply</label>
+						<span class="template-option-pane" id="scope-supply-select">							
+							<input type="checkbox" data-bind="checked: order.contract.pagebreaks.scope">Page Break</input>							
+						</span>
+					</div>
+					<div id="scope_of_supply_content" style="width: 600pt; font-size: 16px">
+						<p>Contractor will deliver <span data-bind="text: order.contract.introduction.qty"></span>&nbsp;(
+							<span data-bind="text: order.contract.introduction.qty_words">&nbsp;</span>
+								) no. CNC cutting machine according to the quote as per appendix 
+							<span id="appendixQuote"><input type="text" placeholder="00" size="2" style="text-align:center" data-bind="value: order.contract.appendixQuote"></input></span> 
+							<span id="appendixTechnicalData">
+								<span data-bind="style:{ color: order.contract.appendixTechnicalData().length > 0 ? 'black' : 'lightgray'}"> , technical data as per appendix </span>&nbsp;
+								<input type="text" placeholder="00" size="2" style="text-align:center" data-bind="value: order.contract.appendixTechnicalData"></input>
+							</span>
+							<span id="appendixLayout">
+								<span data-bind="style:{ color: order.contract.appendixLayout().length > 0 ? 'black' : 'lightgray'}"> and machine lay-out as per appendix </span>&nbsp;
+								<input type="text" placeholder="00" size="2" style="text-align:center" data-bind="value: order.contract.appendixLayout"></input>
+							</span>
+							. Scope of Supply is, either or not collectively, called the "Equipment". 
+						</p>
+						<textarea id="extratexts_scope_of_supply" style="width:800px;height:100px; font-size: 14px" data-bind="richText1: order.contract.extratexts.scope_of_supply"></textarea>
+					</div>
+					<div class="clear-float"></div>
+				</div>
+				<div>
+					<div class="chapterHeader" id="contract_price">
+						<label>Contract Price</label>
+						<span class="template-option-pane" id="contract-price-select">							
+							<input type="checkbox" data-bind="checked: order.contract.pagebreaks.price">Page Break</input>							
+						</span>
+					</div>
+					<div id="contract_price_content" style="width: 600pt; font-size: 16px">
+						<!--p>The full Contract Price shall be <span data-bind="template: { name: project.price.offer_settings.currency()}"></span><span id="amount"><input type="text" size="5" style="text-align:center" data-bind="value: order.contract.price.amount"></input></span>,(<span id="amount_words"><input type="text" placeholder="FULL AMOUNT IN WORDS" size="30" style="text-align:center" data-bind="value: order.contract.price.amount_words"></input></span>)-->
+						<p>The full Contract Price shall be 
+							<span data-bind="template: {name: project.price.offer_settings.currency()}"></span>
+							<span id="amount">
+								<input type="text" size="5" style="text-align:center" data-bind="value: order.contract.price.amount"></input>
+							</span>
+							,(
+							<span id="amount_words">
+								<input type="text" placeholder="FULL AMOUNT IN WORDS" size="30" style="text-align:center" data-bind="value: order.contract.price.amount_words"></input>
+							</span>
+							)
+							<!--p>The full Contract Price shall be &#8364; <span id="amount"><input type="text" size="5" style="text-align:center" data-bind="value: order.contract.price.amount"></input></span>,(<span id="amount_words"><input type="text" placeholder="FULL AMOUNT IN WORDS" size="30" style="text-align:center" data-bind="value: order.contract.price.amount_words"></input></span>)-->
+							<span id="incoterms_content" class="full-width" data-bind="template: { name: order.contract.incoterms()}"></span>
+						</p>
+						<textarea id="extratexts_contract_price" style="width:800px;height:100px; font-size: 14px" data-bind="richText1: order.contract.extratexts.contract_price"></textarea>
+					</div>
+					<div class="clear-float"></div>
+				</div>
+				<div>
+					<div class="chapterHeader" id="terms_of_payment">
+						<label>Terms of payment</label>
+						<span class="template-option-pane" id="terms-select">							
+							<input type="checkbox" data-bind="checked: order.contract.pagebreaks.terms">Page Break</input>							
+						</span>
+					</div>  
+					<div id="terms_of_payment_content"> 
+						<div style="width: 600pt; height: 500pt; float: left">
+							<textarea rows="10"  id="extratexts_terms_of_payment"  style="font-size: 12px" data-bind="richText1: order.contract.extratexts.terms_of_payment"></textarea>
+													
+						</div>
+					</div>
+					
+					</div>
+					<div class="clear-float"></div>
+				</div>
+				<div>
+					<div class="chapterHeader" id="delivery_time">
+						<label>Delivery time</label>
+						<span class="template-option-pane" id="delivery-time-select">
+							<input type="checkbox" data-bind="checked: order.contract.pagebreaks.delivery">Page Break</input>							
+							<select data-bind="options: [{index:0, label:'By num. of Weeks'},{index: 1, label: 'By Date'}], optionsText: 'label', value: order.contract.delivery.type, optionsValue: 'index'"></select>
+						</span>
+					</div>
+					<div style="width: 600pt; font-size: 16px">
+					<div id="delivery_time_content">
+						<textarea id="extratexts_delivery_time" contenteditable="true"  style="width:800px;height:200px; font-size: 14px" data-bind="richText1: order.contract.extratexts.delivery_time"></textarea>
+					</div>
+					</div>
+					<div class="clear-float"></div>
+				</div>
+				<div>
+					<div class="chapterHeader" id="gtc">
+						<label>HGG General Terms and Conditions</label>
+						<input type="checkbox" data-bind="checked: order.contract.pagebreaks.gtc">Page Break</input>
+					</div>			
+					<div id="gtc_content" style="width: 600pt; font-size: 16px">
+						<p>The HGG General Terms and Conditions as per Appendix 
+							<span id="appendixGTC">
+								<input type="text" placeholder="00" size="2" style="text-align:center" data-bind="value: order.contract.appendixGTC"></input>
+							</span> apply to this 
+							<span data-bind="text: order.contract.title">&nbsp;</span> 
+							whereby in case of contradictions the 
+							<span data-bind="text: order.contract.title">&nbsp;</span> 
+							prevails. 
+						</p><br/>
+						<textarea id="extratexts_gtc" style="width:800px;height:150px; font-size: 14px" data-bind="richText1: order.contract.extratexts.gtc"></textarea>
+					</div>
+					<div class="clear-float"></div>
+				</div>
+				<div data-bind="visible: order.contract.settings.gtc_amendments">
+					<div class="chapterHeader" id="gtc_amendments" >
+						<div id="gtc_amendments" style="display: inline"><label>Amendments to HGG General Terms and Conditions</label></div>
+						<input type="checkbox" data-bind="checked: order.contract.pagebreaks.gtc_amendments">Page Break</input>
+					</div>
+					<div id="gtc_amendments_content">
+						<div style="width: 600pt; height: 500pt; float: left">
+							<textarea rows="10" id="extratexts_gtc_amendments" style="font-size: 16px" data-bind="richText1: order.contract.extratexts.gtc_amendments"></textarea>
+						</div>
+					</div>
+					<div class="clear-float"></div>
+				</div>
+				<div>
+					<div class="chapterHeader" id="tests">
+						<label>Tests before shipment</label>
+						<input type="checkbox" data-bind="checked: order.contract.pagebreaks.tests">Page Break</input>
+					</div>			
+					<div id="test_content" style="width: 600pt; height: 500pt; float: left;">
+">
+						<textarea id="extratexts_test" style="width:800px;height:200px; font-size: 14px;" data-bind="richText1: order.contract.extratexts.test"></textarea>
+					</div>
+					<div class="clear-float"></div>
+				</div>
+				<div>
+					<div class="chapterHeader" id="installation">
+						<label>Installation and training</label>
+						<input type="checkbox" data-bind="checked: order.contract.pagebreaks.installation">Page Break</input>
+					</div>
+					<div id="installation_content" style="width: 600pt; height: 500pt; float: left;">
+						<textarea id="extratexts_installation" style="width:800px;height:400px; font-size: 14px" data-bind="richText1: order.contract.extratexts.installation"></textarea>
+					</div>
+					<div class="clear-float"></div>
+				</div>
+				<div>
+					<div class="chapterHeader" id="foundation" >
+						<label>Foundation</label>
+						<input type="checkbox" data-bind="checked: order.contract.pagebreaks.foundation">Page Break</input>
+					</div>
+					<div id="foundation_content" style="width: 600pt; height: 500pt; float: left;">
+						<textarea id="extratexts_foundation" style="width:800px;height:200px; font-size: 14px" data-bind="richText1: order.contract.extratexts.foundation"></textarea>
+					</div>
+					<div class="clear-float"></div>
+				</div>
+				
+				<div>
+					<div class="chapterHeader" id="cutting">
+						<label>Cutting quality and cutting tolerances</label>
+						<input type="checkbox" data-bind="checked: order.contract.pagebreaks.cutting">Page Break</input>
+					</div>
+					<div id="cutting_content" style="width: 600pt; height: 500pt; float: left;">
+						<textarea id="extratexts_cutting_quality" style="width:800px;height:200px; font-size: 14px" data-bind="richText1: order.contract.extratexts.cutting_quality"></textarea>
+					</div>
+					<div class="clear-float"></div>
+				</div>
+				
+				<div>
+					<div class="chapterHeader" id="manual">
+						<label>Manuals</label>
+						<input type="checkbox" data-bind="checked: order.contract.pagebreaks.manual">Page Break</input>
+					</div>
+					<div id="manual_content" style="width: 600pt; height: 500pt; float: left;">
+						<textarea id="extratexts_manual" style="width:800px;height:200px; font-size: 14px" data-bind="richText1: order.contract.extratexts.manual"></textarea>
+					</div>
+					<div class="clear-float"></div>
+				</div>
+				
+				<div>
+					<div class="chapterHeader" id="wtc">
+						<label>HGG Warranty Terms and Conditions</label>
+						<input type="checkbox" data-bind="checked: order.contract.pagebreaks.wtc">Page Break</input>
+					</div>
+					<div id="wtc_content" style="width: 600pt; font-size: 16px">
+						<p>A warranty of 
+							<span id="wtc_year">
+								<input type="text" size="2" style="text-align:center" data-bind="value: order.contract.wtc.year"></input>
+							</span> year(s) applies. The HGG Warranty Terms and Conditions as per Appendix 
+							<span id="appendixWTC">
+								<input type="text" placeholder="00" size="2" style="text-align:center" data-bind="value: order.contract.appendixWTC"></input>
+							</span> apply to this 
+							<span data-bind="text: order.contract.title">&nbsp;</span> whereby in case of contradictions the 
+							<span data-bind="text: order.contract.title">&nbsp;</span> prevails.
+						</p>
+						<textarea id="extratexts_wtc" style="width:800px;height:150px; font-size: 14px" data-bind="richText1: order.contract.extratexts.wtc"></textarea>
+					</div>
+					<div class="clear-float"></div>
+				</div>
+				<div data-bind="visible: order.contract.settings.wtc_amendments">
+					<div class="chapterHeader" id="wtc_amendments" >
+						<label>Amendments to HGG Warranty Terms and Conditions</label>
+						<input type="checkbox" data-bind="checked: order.contract.pagebreaks.wtc_amendments">Page Break</input>
+					</div>
+					<div id="wtc_amendments_content">
+						<div style="width: 600pt; height: 500pt; float: left">
+							<textarea rows="10" id="extratexts_wtc_amendments" style="font-size: 16px" data-bind="richText1: order.contract.extratexts.wtc_amendments"></textarea>
+						</div>
+					</div>
+					<div class="clear-float"></div>
+				</div>
+				<div id="signatory_container">
+					<div class="chapterHeader" id="signatory">
+						<label>Signatory</label>
+						<span class="template-option-pane" id="signatory">
+							<input type="checkbox" data-bind="checked: order.contract.pagebreaks.signatory">Page Break</input>
+						</span>
+					</div>
+					<div id="signatory_content" style="width: 600pt; font-size: 16px">
+						<p>IN WITNESS THEREOF the Parties hereto have duly executed this 
+							<span data-bind="text: order.contract.title">&nbsp;</span> 
+							in two counter parts (each of which shall be deemed original and all of which taken together shall be deemed to constitute one and the same instrument) on the date first above written.
+						</p>
+						<br/><br/>
+						<p>For and on behalf of;</p>
+						<br/><br/>
+						<table>
+							<tr><td>Purchaser:</td><td></td><td>&nbsp;</td><td>Contractor:</td><td></td></tr>
+							<tr><td data-bind="text: order.contract.introduction.fullname"></td><td></td><td>&nbsp;</td><td data-bind="text: order.contract.introduction.contractor"></td><td></td></tr>
+							<tr><td></td><td></td><td>&nbsp;</td><td></td><td></td></tr>
+							<tr><td style="border-bottom:1pt solid black;"></td><td style="border-bottom:1pt solid black;"></td><td>&nbsp;</td><td style="border-bottom:1pt solid black;"></td><td style="border-bottom:1pt solid black;"></td></tr>
+						</table>
+						<br/>
+						<table>
+							<tr><td>By:</td><td>____________</td><td>&nbsp;</td><td>By:</td><td>_____________</td></tr>
+							<tr><td>Place:</td><td>____________</td><td>&nbsp;</td><td>Place:</td><td>_____________</td></tr>
+							<tr><td>Date:</td><td>____________</td><td>&nbsp;</td><td>Date:</td><td>_____________</td></tr>
+						</table>
+					</div>
+					<div class="clear-float"></div>
+				</div>
+			</div>
+				<div>
+					<br/><br/>
+					<div class="chapterHeader" id="appendices_placeholder">
+						<label>Appendices</label>
+						<input type="checkbox" data-bind="checked: order.contract.pagebreaks.appendices">Page Break</input>
+					</div>								
+				</div>
+            </div>
+		</div>
+	</script>
+	
+	<script type="text/html" id="HandOver">
+		<div class="button-bar">
+			<a class="button button-medium" data-bind="click: handover.createHandOver, disable: handover.isDirty, css: { disabled: handover.isDirty() == true}">Create HandOver Document</a>			
+			<a class="button button-medium" data-bind="click: handover.save, enable: handover.isDirty, css: { disabled: handover.isDirty() == false}"><span data-bind="text: handover.saveLabel">&nbsp;</span></a>
+		</div>
+		<div class="stage">
+            <div id="throbber">
+                <h2>Generating Hand Over Document...</h2>
+                <img src='/static/img/ajax-loader.gif'></img>
+            </div>            	
+            <div class="standardview">
+				<style type="text/css">.editable {background: yellow;}</style>
+				<div>
+					<div class="chapterHeader" id="cover_page">
+						<label>Cover Page</label>
+					</div>
+					<div style="width: 600pt; font-size: 16px">
+					<table class="price-table">
+					<tr><td>Customer Name:</td><td><span data-bind="text: project.customerDetails.companyName"></span></td></tr>
+					<tr><td>Client reference:</td><td><span data-bind="text: order.contract.introduction.customer_reference"></span></td></tr>
+					<tr><td>HGG Project Number:</td><td><span><input type="text" data-bind="value: handover.handOverAdditionalData.coverpage.hggProjectNumber"></input></span></td></tr>
+					<tr><td>HGG Project Manager:</td><td><span><input type="text" data-bind="value: handover.handOverAdditionalData.coverpage.hggProjectManager"></input></span></td></tr>
+					<tr><td>Hand-over Date:</td><td><span><input type="date" data-bind="value: handover.handOverAdditionalData.coverpage.handOverDate"></input></span></td></tr>
+					<tr><td>Sales key person:</td><td><span><input type="text" data-bind="value: handover.handOverAdditionalData.coverpage.salesKeyPerson"></input></span></td></tr>
+					</table>
+					</div>					
+					<div class="clear-float"></div>
+				</div>
+				<div>
+					<div class="chapterHeader" id="contact_details">
+						<label>Contact Details</label>
+					</div>
+					<div style="width: 600pt; font-size: 16px">
+					<!--<h3>Revisions</h3><h3>Date</h3><h3>Name</h3><h3>Change</h3>-->
+					<!--<div><table style="margin: 45px auto; width: 80%; padding: 7px;">-->
+					<div><table class="price-table">
+						<tr style="text-align: center"><th>Revisions</th><th>Date</th><th>Name</th><th>Change</th></tr>
+						<tr><th>Entry 1</th>
+							<td><span><input type="date" style="font-family: verdana" data-bind="value: handover.handOverAdditionalData.contactDetails.rev1Date"></input></span></td>
+							<td><span><input type="text" style="font-family: verdana" data-bind="value: handover.handOverAdditionalData.contactDetails.rev1Name"></input></span></td>
+							<td><span><textarea style="font-family: verdana" rows="8" cols="80" data-bind="value: handover.handOverAdditionalData.contactDetails.rev1Change"></textarea></span></td>
+						</tr>
+						<tr><th>Entry 2</th>
+							<td><span><input type="date" style="font-family: verdana" data-bind="value: handover.handOverAdditionalData.contactDetails.rev2Date"></input></span></td>
+							<td><span><input type="text" style="font-family: verdana" data-bind="value: handover.handOverAdditionalData.contactDetails.rev2Name"></input></span></td>
+							<td><span><textarea style="font-family: verdana" rows="8" cols="80" data-bind="value: handover.handOverAdditionalData.contactDetails.rev2Change"></textarea></span></td>
+						</tr>
+						<tr><th>Entry 3</th>
+							<td><span><input type="date" style="font-family: verdana" data-bind="value: handover.handOverAdditionalData.contactDetails.rev3Date"></input></span></td>
+							<td><span><input type="text" style="font-family: verdana" data-bind="value: handover.handOverAdditionalData.contactDetails.rev3Name"></input></span></td>
+							<td><span><textarea style="font-family: verdana" rows="8" cols="80" data-bind="value: handover.handOverAdditionalData.contactDetails.rev3Change"></textarea></span></td>
+						</tr>
+						<tr><th>Entry 4</th>
+							<td><span><input type="date" style="font-family: verdana" data-bind="value: handover.handOverAdditionalData.contactDetails.rev4Date"></input></span></td>
+							<td><span><input type="text" style="font-family: verdana" data-bind="value: handover.handOverAdditionalData.contactDetails.rev4Name"></input></span></td>
+							<td><span><textarea style="font-family: verdana" rows="8" cols="80" data-bind="value: handover.handOverAdditionalData.contactDetails.rev4Change"></textarea></span></td>
+						</tr>
+						<tr><th>Entry 5</th>
+							<td><span><input type="date" style="font-family: verdana" data-bind="value: handover.handOverAdditionalData.contactDetails.rev5Date"></input></span></td>
+							<td><span><input type="text" style="font-family: verdana" data-bind="value: handover.handOverAdditionalData.contactDetails.rev5Name"></input></span></td>
+							<td><span><textarea style="font-family: verdana" rows="8" cols="80" data-bind="value: handover.handOverAdditionalData.contactDetails.rev5Change"></textarea></span></td>
+						</tr>
+					</table></div>
+					<br/>
+					<div id="company-contact-details">
+						<h2>Company</h2>
+						<table class="price-table">
+						<!--placeholder="ADDRESS, POSTAL CODE, PROVINCE, STATE, COUNTRY" size="60"-->
+							<tr><td>Address:</td><td><span><textarea rows="6" cols="60" data-bind="value: handover.handOverAdditionalData.contactDetails.companyAddress"></textarea></span></td></tr>
+							<tr><td>Name:</td><td><span><input type="text" data-bind="value: handover.handOverAdditionalData.contactDetails.companyName"></input></span></td></tr>
+							<tr><td>Telephone:</td><td><span><input type="text" data-bind="value: handover.handOverAdditionalData.contactDetails.companyTelephone"></input></span></td></tr>
+							<tr><td>Email:</td><td><span><input type="text" data-bind="value: handover.handOverAdditionalData.contactDetails.companyEmail"></input></span></td></tr>
+						</table>
+					</div>
+					<br/>
+					<div id="financial-contact-details">
+						<h2>Financial</h2>
+						<table class="price-table">
+							<tr><td>Address:</td><td><span><textarea rows="6" cols="60" data-bind="value: handover.handOverAdditionalData.contactDetails.financialAddress"></textarea></span></td></tr>
+							<tr><td>Name:</td><td><span><input type="text" data-bind="value: handover.handOverAdditionalData.contactDetails.financialName"></input></span></td></tr>
+							<tr><td>Telephone:</td><td><span><input type="text" data-bind="value: handover.handOverAdditionalData.contactDetails.financialTelephone"></input></span></td></tr>
+							<tr><td>Email:</td><td><span><input type="text" data-bind="value: handover.handOverAdditionalData.contactDetails.financialEmail"></input></span></td></tr>
+						</table>
+					</div>
+					<br/>
+					<div id="technical-contact-details">
+						<h2>Technical</h2>
+						<table class="price-table">
+							<tr><td>Address:</td><td><span><textarea rows="6" cols="60" data-bind="value: handover.handOverAdditionalData.contactDetails.technicalAddress"></textarea></span></td></tr>
+							<tr><td>Name:</td><td><span><input type="text" data-bind="value: handover.handOverAdditionalData.contactDetails.technicalName"></input></span></td></tr>
+							<tr><td>Telephone:</td><td><span><input type="text" data-bind="value: handover.handOverAdditionalData.contactDetails.technicalTelephone"></input></span></td></tr>
+							<tr><td>Email:</td><td><span><input type="text" data-bind="value: handover.handOverAdditionalData.contactDetails.technicalEmail"></input></span></td></tr>
+						</table>
+					</div>
+					<br/>
+					<div id="service-contact-details">
+						<h2>Service</h2>
+						<table class="price-table">
+							<tr><td>Address:</td><td><span><textarea rows="6" cols="60" data-bind="value: handover.handOverAdditionalData.contactDetails.serviceAddress"></textarea></span></td></tr>
+							<tr><td>Name:</td><td><span><input type="text" data-bind="value: handover.handOverAdditionalData.contactDetails.serviceName"></input></span></td></tr>
+							<tr><td>Telephone:</td><td><span><input type="text" data-bind="value: handover.handOverAdditionalData.contactDetails.serviceTelephone"></input></span></td></tr>
+							<tr><td>Email:</td><td><span><input type="text" data-bind="value: handover.handOverAdditionalData.contactDetails.serviceEmail"></input></span></td></tr>
+						</table>
+					</div>
+					<br/>
+					<div id="agency-contact-details">
+						<h2>Agency</h2>
+						<table class="price-table">
+							<tr><td>Company:</td><td><span><input type="text" data-bind="value: handover.handOverAdditionalData.contactDetails.agencyCompany"></input></span></td></tr>
+							<tr><td>Address:</td><td><span><textarea rows="6" cols="60" data-bind="value: handover.handOverAdditionalData.contactDetails.agencyAddress"></textarea></span></td></tr>
+							<tr><td>Name:</td><td><span><input type="text" data-bind="value: handover.handOverAdditionalData.contactDetails.agencyName"></input></span></td></tr>
+							<tr><td>Telephone:</td><td><span><input type="text" data-bind="value: handover.handOverAdditionalData.contactDetails.agencyTelephone"></input></span></td></tr>
+							<tr><td>Email:</td><td><span><input type="text" data-bind="value: handover.handOverAdditionalData.contactDetails.agencyEmail"></input></span></td></tr>
+						</table>
+					</div>
+					<br/>
+					<div id="delivery-contact-details">
+						<table>
+							<tr>
+							<td cellpadding="10px">
+								<p>Delivery address in case differs from company details: </p>
+							</td>
+							<td><span><textarea rows="6" cols="60" data-bind="value: handover.handOverAdditionalData.contactDetails.deliveryAddress"></textarea></span></td>
+							</tr>
+						</table>
+					</div>
+					<div class="clear-float"></div>
+				<div>
+					<div class="chapterHeader" id="financial_scope">
+						<label>Financial Scope</label>
+					</div>
+					<div style="width: 600pt; font-size: 16px">
+					<table class="price-table">
+					<!--<tr><td>HGG Offer reference:</td><td><span data-bind="text: project.projectName"></span></td></tr>-->
+					<tr><td>HGG Offer reference:</td><td><span data-bind="text: handover.handOverAdditionalData.financialScope.hggOfferReference"></span></td></tr>
+					<tr><td>PO reference:</td><td><span><input type="text" data-bind="value: handover.handOverAdditionalData.financialScope.poReference"></input></span></td><td></td></tr>
+					<tr><td>Reference client:</td><td><span><input type="text" data-bind="value: handover.handOverAdditionalData.financialScope.referenceClient"></input></span></td><td></td></tr>
+					<tr><td>VAT number (Europe only):</td><td><span><input type="text" data-bind="value: handover.handOverAdditionalData.financialScope.vatNumber"></input></span></td><td></td></tr>
+					<tr><td>Import/export documents:</td><td><select data-bind="value: handover.handOverAdditionalData.financialScope.documents, options: ['Yes','No']"></select></td><td><textarea rows="3" cols="50" data-bind="value: handover.handOverAdditionalData.financialScope.documentsAdditional"></textarea></td></tr>
+					<tr><td>Shipping instructions:</td><td><select data-bind="value: handover.handOverAdditionalData.financialScope.shipping, options: ['Yes','No']"></select></td><td><textarea rows="3" cols="50" data-bind="value: handover.handOverAdditionalData.financialScope.shippingAdditional"></textarea></td></tr>
+					<tr><td>Costs Pre acceptance:</td><td><select type="text" data-bind="value: handover.handOverAdditionalData.financialScope.costsPreAcceptance, options: ['Customer','HGG','Other']"></select></td><td></input><textarea rows="3" cols="50" data-bind="value: handover.handOverAdditionalData.financialScope.costsPreAcceptanceAdditional"></textarea></td></tr>
+					<!--, options: ['Order Confirmation', 'Contract', 'Agreement']-->
+					<tr><td>Costs Installation:</td><td><select type="text" data-bind="value: handover.handOverAdditionalData.financialScope.costsInstallation, options: ['Customer(flight, hotel, local transport)','HGG','Other']"></select></td><td><textarea rows="3" cols="50" data-bind="value: handover.handOverAdditionalData.financialScope.costsInstallationAdditional"></textarea></td></tr>
+					<tr><td>Commission:</td><td><select data-bind="value: handover.handOverAdditionalData.financialScope.commission, options: ['Yes','No']"></select></td><td><textarea rows="3" cols="50" data-bind="value: handover.handOverAdditionalData.financialScope.commissionAdditional"></textarea></td></tr>
+					<tr><td>Penalty:</td><td><select data-bind="value: handover.handOverAdditionalData.financialScope.penalty, options: ['Yes','Yes Orgalime','No']"></select></td><td><textarea rows="3" cols="50" data-bind="value: handover.handOverAdditionalData.financialScope.penaltyAdditional"></textarea></td></tr>
+					</table>
+					</div>
+					<div class="clear-float"></div>
+				</div>
+				<div>
+					<div class="chapterHeader" id="technical_scope">
+						<label>Technical Scope</label>
+					</div>
+					<div style="width: 600pt; font-size: 16px">
+					<table class="price-table" style="width: 100%">
+					<tr><td width="20%">Lay out:</td><td width="20%"><select data-bind="value: handover.handOverAdditionalData.technicalScope.layout, options: ['Left','Right','Other']"></select></td><td width="60%"><textarea rows="3" cols="50" data-bind="value: handover.handOverAdditionalData.technicalScope.layoutAdditional"></textarea></td></tr>
+					<tr><td>Oxy fuel cutting Gas	:</td><td><select data-bind="value: handover.handOverAdditionalData.technicalScope.oxyfuelCuttingGas, options: ['Acetylene','Propane','LNG','Other']"></select></td><td><textarea rows="3" cols="50" data-bind="value: handover.handOverAdditionalData.technicalScope.oxyfuelCuttingGasAdditional"></textarea></td></tr>
+					<tr><td>Plasma cutting Gas :</td><td><select data-bind="value: handover.handOverAdditionalData.technicalScope.plasmaCuttingGas, options: ['Carbon Steel','Stainless Steel','Alluminum','Other']"></select></td><td><textarea rows="3" cols="50" data-bind="value: handover.handOverAdditionalData.technicalScope.plasmaCuttingGasAdditional"></textarea></td></tr>
+					<tr><td>Power Ph	:</td><td><select data-bind="value: handover.handOverAdditionalData.technicalScope.power, options: ['3 phase + neutral + earth ','3 phase + earth']"></select></td><td><textarea rows="3" cols="50" data-bind="value: handover.handOverAdditionalData.technicalScope.powerAdditional"></textarea></td></tr>
+					<tr><td>Hz:</td><td><select data-bind="value: handover.handOverAdditionalData.technicalScope.frequency, options: ['50 Hz','60 Hz']"></select></td><td><textarea rows="3" cols="50" data-bind="value: handover.handOverAdditionalData.technicalScope.frequencyAdditional"></textarea></td></tr>
+					<tr><td>V :</td><td><select data-bind="value: handover.handOverAdditionalData.technicalScope.voltage, options: ['3x220','3x380','3x400','3x440','Other']"></select></td><td><textarea rows="3" cols="50" data-bind="value: handover.handOverAdditionalData.technicalScope.voltageAdditional"></textarea></td></tr>
+					<tr><td>ProCAD: [ProCAM]</td><td><select data-bind="value: handover.handOverAdditionalData.technicalScope.proCAD, options: ['Yes', 'No', 'Other']"></select></span></td><td><textarea rows="3" cols="50" data-bind="value: handover.handOverAdditionalData.technicalScope.proCADAdditional"></textarea></td></tr>
+					<tr><td>Fileserver network	:</td><td><select data-bind="value: handover.handOverAdditionalData.technicalScope.fileserverNetwork, options: ['Windows','Other']"></select></td><td><textarea rows="3" cols="50" data-bind="value: handover.handOverAdditionalData.technicalScope.fileserverNetworkAdditional"></textarea></td></tr>
+					<tr><td>Connection type	:</td><td><select data-bind="value: handover.handOverAdditionalData.technicalScope.connectionType, options: ['UTP','Other']"></select></td><td><textarea rows="3" cols="50" data-bind="value: handover.handOverAdditionalData.technicalScope.connectionTypeAdditional"></textarea></td></tr>
+					<tr><td>Data file location	:</td><td><select data-bind="value: handover.handOverAdditionalData.technicalScope.dataFileLocation, options: ['IPC Hard Disk','Office off-line PC','Client fileserver','Other']"></select></td><td><textarea rows="3" cols="50" data-bind="value: handover.handOverAdditionalData.technicalScope.dataFileLocationAdditional"></textarea></td></tr>
+					<tr><td>Spare parts :</td><td><select data-bind="value: handover.handOverAdditionalData.technicalScope.spareParts, options: ['Yes','No']"></select></td><td><textarea rows="3" cols="50" data-bind="value: handover.handOverAdditionalData.technicalScope.sparePartsAdditional"></textarea></td></tr>
+					<tr><td>Consumable parts :</td><td><select data-bind="value: handover.handOverAdditionalData.technicalScope.consumableParts, options: ['Yes','No']"></select></td><td><textarea rows="3" cols="50" data-bind="value: handover.handOverAdditionalData.technicalScope.consumablePartsAdditional"></textarea></td></tr>
+					<tr><td>Warranty :</td><td><select data-bind="value: handover.handOverAdditionalData.technicalScope.warranty, options: ['1 yr','2 yr','Other']"></select></td><td><textarea rows="3" cols="50" data-bind="value: handover.handOverAdditionalData.technicalScope.warrantyAdditional"></textarea></td></tr>
+					<tr><td>Service contract :</td><td><select data-bind="value: handover.handOverAdditionalData.technicalScope.service, options: ['Yes','No']"></select></td><td><textarea rows="3" cols="50" data-bind="value: handover.handOverAdditionalData.technicalScope.serviceAdditional"></textarea></td></tr>
+					</table>
+					</div>
+					<div class="clear-float"></div>
+				</div>
+				<div>
+					<div class="chapterHeader" id="specials_remarks">
+						<label>Specials and Remarks</label>
+					</div>
+                    <div style="width: 600pt; height: 500pt; float: left">
+						<table class="price-table" style="width: 100%">
+						<tr><td width="20%">Specials:</td><td width="20%"><select data-bind="value: handover.handOverAdditionalData.remarks.specials, options: ['Yes','No']"></select></td><td width="60%"><textarea rows="3" cols="50" data-bind="value: handover.handOverAdditionalData.remarks.specialsAdditional"></textarea></td></tr>
+						<tr><td>Remarks:</td><td></td><td><textarea rows="3" cols="50" data-bind="value: handover.handOverAdditionalData.remarks.remarks"></textarea></td></tr>
+						<tr><td>ETO Design Check Form:</td><td><select data-bind="value: handover.handOverAdditionalData.remarks.ETO, options: ['Yes','No']"></select></td><td><textarea rows="3" cols="50" data-bind="value: handover.handOverAdditionalData.remarks.ETOAdditional"> </textarea></td></tr>
+						</table>
+					</div>						
+					<div class="clear-float"></div>
+				</div>
+			</div>	
+		</div>
+	</script>
+
+	<script type="text/html" id="EXW">
+		<span>, Ex-Works <span id="incoterms_freight"><input type="text" placeholder="HGG Premises, the Netherlands" size="40" style="text-align:center" data-bind="value: order.contract.incoterms_freight"></input></span> as per INCOTERMS 2010, excluding all duties, levies and taxes.</span>
+	</script>
+	<script type="text/html" id="FCA">
+		<span>, Free Carrier <span id="incoterms_freight"><input type="text" placeholder="Freight handler" size="40" style="text-align:center" data-bind="value: order.contract.incoterms_freight"></input></span> as per INCOTERMS 2010, excluding all duties, levies and taxes.</span>
+	</script>
+	<script type="text/html" id="CPT">
+		<span>, Carriage Paid To <span id="incoterms_freight"><input type="text" placeholder="Destination" size="40" style="text-align:center" data-bind="value: order.contract.incoterms_freight"></input></span> as per INCOTERMS 2010, excluding all duties, levies and taxes.</span>
+	</script>
+	<script type="text/html" id="CIP">
+		<span>, Carriage and Insurance Paid to <span id="incoterms_freight"><input type="text" placeholder="Destination" size="40" style="text-align:center" data-bind="value: order.contract.incoterms_freight"></input></span> as per INCOTERMS 2010, excluding all duties, levies and taxes.</span>
+	</script>
+	<script type="text/html" id="DAP">
+		<span>, Delivered at Place <span id="incoterms_freight"><input type="text" placeholder="Place of destination" size="40" style="text-align:center" data-bind="value: order.contract.incoterms_freight"></input></span> as per INCOTERMS 2010, excluding all duties, levies and taxes.</span>
+	</script>
+	<script type="text/html" id="DDP">
+		<span>, Delivered Duty Paid <span id="incoterms_freight"><input type="text" placeholder="Destination" size="40" style="text-align:center" data-bind="value: order.contract.incoterms_freight"></input></span> as per INCOTERMS 2010, excluding all duties, levies and taxes.</span>
+	</script>
+	<script type="text/html" id="FOB">
+		<span>, Free on Board <span id="incoterms_freight"><input type="text" placeholder="On board ship" size="40" style="text-align:center" data-bind="value: order.contract.incoterms_freight"></input></span> as per INCOTERMS 2010, excluding all duties, levies and taxes.</span>
+	</script>
+	<script type="text/html" id="CFR">
+		<span>, Cost and Freight <span id="incoterms_freight"><input type="text" placeholder="Port of destination" size="40" style="text-align:center" data-bind="value: order.contract.incoterms_freight"></input></span> as per INCOTERMS 2010, excluding all duties, levies and taxes.</span>
+	</script>
+	<script type="text/html" id="CIF">
+		<span>, Cost, Insurance and Freight <span id="incoterms_freight"><input type="text" placeholder="Port of destination" size="40" style="text-align:center" data-bind="value: order.contract.incoterms_freight"></input></span> as per INCOTERMS 2010, excluding all duties, levies and taxes.</span>
+	</script>
+	
+	<script type="text/html" id="EXW_DT">
+		<span> Ex-Works</span>
+	</script>
+	<script type="text/html" id="FCA_DT">
+		<span> Free Carrier</span>
+	</script>
+	<script type="text/html" id="CPT_DT">
+		<span> Carriage Paid To</span>
+	</script>
+	<script type="text/html" id="CIP_DT">
+		<span> Carriage and Insurance Paid to</span>
+	</script>
+	<script type="text/html" id="DAP_DT">
+		<span> Delivered at Place</span>
+	</script>
+	<script type="text/html" id="DDP_DT">
+		<span> Delivered Duty Paid</span>
+	</script>
+	<script type="text/html" id="FOB_DT">
+		<span> Free on Board</span>
+	</script>
+	<script type="text/html" id="CFR_DT">
+		<span> Cost and Freight</span>
+	</script>
+	<script type="text/html" id="CIF_DT">
+		<span> Cost, Insurance and Freight</span>
+	</script>
+	
+	<script type="text/html" id="delivery_time_type-0">
+		<span id="weeks"><input type="text" placeholder="XX" size="2" style="text-align:center" data-bind="value: order.contract.delivery.weeks"></input></span> weeks (<span id="weeks_words"><input type="text" placeholder="NO OF WEEKS IN WORDS" size="30" style="text-align:center" data-bind="value: order.contract.delivery.weeks_words"></input></span>)
+	</script>
+	<script type="text/html" id="delivery_time_type-1">
+		<span id="weeks"><input type="text" placeholder="DATE" size="30" style="text-align:center" data-bind="value: order.contract.delivery.date"></input></span>
+	</script>
+	
+	<script type="text/html" id="EUR">
+		<span> &euro;</span>
+	</script>
+	<script type="text/html" id="USD">
+		<span> &#36;</span>
+	</script>
+
+	<script type="text/javascript">
+		function onEnter(event) { return event.keyCode == 13;}
+		function shiftFocusTo(target) { document.getElementsByName(target)[0].focus();}
+	</script>
+	
+	<script type="text/javascript" src="/static/js/jquery-1.7.2.min.js"></script>
+	<script type="text/javascript" src="/static/js/knockout-3.0.0.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+    <script type="text/javascript" src="/static/lib/bootstrap/js/bootstrap.js"></script>
+    <script type="text/javascript" src="/static/lib/ckeditor/ckeditor.js"></script>
+    <script type="text/javascript" src="/static/js/countries.js"></script>
+	<script type="text/javascript" src="/static/js/data.js"></script>
+	<script type="text/javascript" src="/static/js/offerComponents.js"></script>
+	<script type="text/javascript" src="/static/js/orderConfirmationTemplate.js"></script>
+	<script type="text/javascript" src="/static/js/orderConfirmation.js"></script>
+	
+	
+</body>
+</html>

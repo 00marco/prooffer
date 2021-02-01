@@ -1,0 +1,1129 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>ProOffer</title>
+    <link rel="stylesheet" type="text/css" href="/static/css/style.css"/>
+</head>
+
+<body>
+    <div id="header" class="full-width">
+        <div class="app-title full-width">
+            <h1>ProOffer 2.0.3</h1>
+            <div data-bind="if: hasStarted">
+                <span data-bind="text: projectNumber"></span>
+                <span data-bind="if: machineName" class="spacer">:</span>
+                <span data-bind="text: machineName"></span>
+            </div>
+            <div style="float:right;width:250px;height:25px;color:white;margin:0px;padding:0px">
+                <iframe style="width:100%;height:100%" scrolling="no" src="sync"></iframe>
+            </div>
+        </div>
+        <div data-bind="if: hasStarted" class="navigation full-width">
+            <ul class="full-width" data-bind="foreach: stages">
+                <li data-bind="css: { navselected: $data == $parent.currentStageId()},
+                               click: $parent.gotoStage">
+                               <a class="nav-button">
+                                    <span class="nav-label" data-bind="text: $data == 'Complementary Goods' ? 'Additional Goods' : $data, attr: {title: $data}"></span>
+                               </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+	<div id="content" class="full-width" data-bind="template: { name: currentStageId()}"></div>
+    <script type="text/html" id="Start">
+        <div class="stage">
+            <div class="quote-options-pane">
+				<div class="quote-option primary-option" data-bind="click: startOptions.createNewQuote">
+					<h2>Create New Quote</h2>
+					<label data-bind="text: currentRef"></label>
+				</div>                
+                <div style="margin-left:10px">
+                    <h2 data-bind="text: user.firstname + ' ' + user.lastname"></h2>
+                    <h2 data-bind="text: user.role"></h2>
+					<h2 data-bind="text: $root.user.code"></h2>
+					<!-- ko if: $root.privilege.isAdmin -->
+                    <!--a href="http://localhost:5984/prooffer_data_admin/_design/adminui/adminui.html">Go to Admin UI</a>
+					<a href="http://localhost:5984/prooffer_data_admin/_design/adminui/costprice.html">View Cost Price</a-->
+					<!-- /ko -->
+					<!-- ko if: $root.user.allowOrderConfirmation -->
+					<!--a href="http://127.0.0.1:7708/prooffer/ordcon">Order Confirmation</a-->
+					<!-- /ko -->					
+                </div>
+            </div>
+            <div class="clear-float"></div>
+			<div class="quote-table-header">
+				<div style="float:left;width:80%" >
+					<ul >
+						<li style="width:10%">
+							<div class="header-text" >Last Modified</div>
+						</li>
+						<li style="width:20%">
+							<div class="header-text">User Code</div>
+							<div>
+								<select style="width:100%" data-bind="value: startOptions.creatorFilter, options: startOptions.creators"></select>
+							</div>
+						</li>
+						<li style="width:10%">
+							<div class="header-text">Country</div>
+							<div>
+								<input style="width:100%" list="countries" data-bind="value: startOptions.countryFilter"></input>
+								<datalist id="countries"> 
+									<!-- ko foreach: startOptions.countries -->
+										<option data-bind="text: $data"></option>
+									<!-- /ko -->
+								</datalist>
+							</div>
+						</li>
+						<li style="width:40%">
+							<div class="header-text">Company Name</div>
+							<div>
+								<input style="width:100%" list="companyNames" data-bind="value: startOptions.companyNameFilter"></input>
+								<datalist id="companyNames"> 
+									<!-- ko foreach: startOptions.companyNames -->
+										<option data-bind="text: $data"></option>
+									<!-- /ko -->
+								</datalist>
+							</div>
+						</li>
+						<li style="width:15%">
+							<div class="header-text" >Machine Name</div>
+							<div>
+								<input style="width:100%" list="machineNames" data-bind="value: startOptions.machineNameFilter"></input>
+								<datalist id="machineNames"> 
+									<!-- ko foreach: startOptions.machineNames -->
+										<option data-bind="text: $data"></option>
+									<!-- /ko -->
+								</datalist>
+							</div>
+						</li>
+					</ul>		
+				</div>	
+			</div>
+			<div class="clear-float"></div>
+            <div class="quote-table-container">
+                <table class="quote-table">
+                    <tr></tr>
+                    <!-- ko foreach: startOptions.projectList -->
+                    <tr data-bind="visible: $data.createdby == $root.startOptions.creatorFilter() &&
+											($root.startOptions.countryFilter() == '' ? true : $data.country == $root.startOptions.countryFilter()) &&
+											($root.startOptions.companyNameFilter() == '' ? true : $data.companyName == $root.startOptions.companyNameFilter()) &&
+											($root.startOptions.machineNameFilter() == '' ? true : $data.machineName == $root.startOptions.machineNameFilter()) &&
+											($root.startOptions.contactPersonFilter() == '' ? true : $data.contactPerson == $root.startOptions.contactFilter())">
+						<td style="width:80%">
+							<ul class="quote-options">
+								<li style="width:10%" data-bind="css: { selected: $data.projectName == $parent.startOptions.selectedQuote() },
+													  click: $parent.startOptions.selectExistingQuote,
+													  text: $data.lastmodifiedby + '@' + $data.lastmodified">
+                                </li>
+								<li style="width:20%" data-bind="css: { selected: $data.projectName == $parent.startOptions.selectedQuote() },
+													  click: $parent.startOptions.selectExistingQuote,
+													  text: $data.projectName">
+								</li>
+								<li style="width:10%" data-bind="css: { selected: $data.projectName == $parent.startOptions.selectedQuote() },
+													  click: $parent.startOptions.selectExistingQuote,
+													  text: $data.country">
+								</li>
+								<li style="width:40%" data-bind="css: { selected: $data.projectName == $parent.startOptions.selectedQuote() },
+													  click: $parent.startOptions.selectExistingQuote,
+													  text: $data.companyName">
+								</li>
+								<li style="width:10%" data-bind="css: { selected: $data.projectName == $parent.startOptions.selectedQuote() },
+													  click: $parent.startOptions.selectExistingQuote,
+													  text: $data.machineName">
+								</li>
+							</ul>
+						</td>
+                        <td style="width:20%">
+                            <ul class="quote-options">
+                                <li><a data-bind="click: $root.startOptions.openSelectedQuote">Open</a></li>
+                                <li><a data-bind="click: $root.startOptions.reviseSelectedQuote">Revise</a></li>
+                                <li><a data-bind="click: $root.startOptions.copySelectedQuote">Copy</a></li>     
+                                <!-- ko if: $data.createdby == $root.user.code -->
+                                <li><a data-bind="click: $root.startOptions.removeProject">Delete</a></li>
+                                <!-- /ko -->
+                            </ul>
+                        </td>
+                    </tr>
+                    <!-- /ko -->
+                </table>
+				<!--table class="quote-options">
+					<tr>
+						<td style="padding-left:1230px" class="quote-per-page">
+							<a class="quote-linkable" href="http://www.yahoo.com" > &larr; Previous Page</a>
+						</td>
+						<td class="quote-per-page">
+							<p>|</p>
+						</td>
+						<td class="quote-per-page">
+							<p>Quotes Per Page: </p>
+						</td>
+						<td class="quote-per-page">
+							<input style="width:40px; padding-left:5px;" list="quotesLimit" value="5">
+							<datalist id="quotesLimit">
+								<option value="5">
+								<option value="10">
+								<option value="20">
+								<option value="25">
+								<option value="50">
+								<option value="100">
+							</datalist>
+						</td>
+						<td class="quote-per-page">
+							<p>|</p>
+						</td>
+						<td class="quote-per-page">
+							<a href="http://www.google.com">Next Page &rarr; </a>
+						</td>
+					</tr>
+				</table-->
+            </div>
+        </div>
+    </script>
+	<script type="text/html" id="Customer Details">
+        <div class="stage">
+            <div class="container">
+                <div class="button-container">
+					<!--a class="button button-medium disabled">Import from CRM</a-->
+                    <a class="button button-medium" data-bind="click: customerDetails.showCRMDialog">Import from CRM</a>
+                </div>
+                <div class="form form-customer-details">
+                    <h3>ACCOUNT</h3>
+                    <p>
+                        <label>Company Name:</label>
+                        <input data-bind="value: project.customerDetails.companyName" name="companyName" onkeypress="if(onEnter(event)) shiftFocusTo('contactPerson')"></input>
+                        <label>Company Logo:</label> 
+                        <input id="file-browser" data-bind="event: {change: customerDetails.showImage}, value: customerDetails.logoFileName" type="file"/>
+                    </p>
+                    <p>
+                        <img class="company-logo" data-bind="attr: {src: $root.customerLogo}"></img>
+                        <div class="remove-logo" data-bind="visible: $root.customerLogo() != '', click: customerDetails.removeLogo"></div>
+                    </p>
+                    <h3>CONTACT</h3>
+                    <p>
+                        <label>Contact Person: </label>
+                        <input data-bind="value: project.customerDetails.contactPerson" name="contactPerson" onkeypress="if(onEnter(event)) shiftFocusTo('gender')"></input>
+                        <label>Gender: </label>
+                        <select data-bind="options: customerDetails.genderOptions, value: project.customerDetails.gender" name="gender" onkeypress="if(onEnter(event)) shiftFocusTo('fullAddress')"></select>
+                    </p>
+                    
+                    <h3>ADDRESS</h3>
+                    <p>
+                        <label>Full Address: </label>
+                        <input data-bind="value: project.customerDetails.fullAddress" name="fullAddress" onkeypress="if(onEnter(event)) shiftFocusTo('poBox')"></input>
+                        <label>PO Box: </label>
+                        <input data-bind="value: project.customerDetails.poBox" name="poBox" onkeypress="if(onEnter(event)) shiftFocusTo('city')"></input>
+                    </p>
+                    <p>
+                        <label>City: </label>
+                        <input data-bind="value: project.customerDetails.city" name="city" onkeypress="if(onEnter(event)) shiftFocusTo('state')"></input>
+                        <label>State: </label>
+                        <input data-bind="value: project.customerDetails.state" name="state" onkeypress="if(onEnter(event)) shiftFocusTo('postalCode')"></input>
+                    </p>
+                    <p>
+                        <label>Postal Code: </label>
+                        <input data-bind="value: project.customerDetails.postalCode" name="postalCode" onkeypress="if(onEnter(event)) shiftFocusTo('country')"></input>
+                        <label>Country: </label>
+                        <select data-bind="options: customerDetails.countryOptions, value: project.customerDetails.country" name="country" onkeypress="if(onEnter(event)) shiftFocusTo('telNo')"></select>
+                    </p>
+                    
+                    <h3>ADDITIONAL</h3>
+                    <p>
+                        <label>Tel. no.: </label>
+                        <input data-bind="value: project.customerDetails.telNo" name="telNo" onkeypress="if(onEnter(event)) shiftFocusTo('website')"></input>
+                        <label>Website: </label>
+                        <input data-bind="value: project.customerDetails.website" name="website" onkeypress="if(onEnter(event)) shiftFocusTo('email')"></input>
+                    </p>
+                    <p class="column-1">
+                        <label>Email: </label>
+                        <input data-bind="value: project.customerDetails.email" type="email" onkeypress="if(onEnter(event)) shiftFocusTo('companyName')"></input>
+                    </p>
+                </div>
+            </div>
+        </div>
+	</script>
+	<script type="text/html" id="Machine">
+        <div class="stage">
+            <table class="table-machine">
+                <tr>
+                    <td>
+                        <h4>Machine Type</h4>
+                        <ul data-bind="foreach: machine.machineData">
+                            <li data-bind="text: $data.typeName,
+                                            css: {selected: $data.typeName == $root.project.machine.machineType()},
+                                           click: $parent.machine.setMachineRange">
+                            </li>
+                        </ul>
+                    </td>
+                    <td>
+                        <h4>Machine Range</h4>
+                        <ul data-bind="foreach: machine.machineRange">
+                            <li data-bind="text: $data.rangeName,
+                                            css: {selected: $data.rangeName == $root.project.machine.machineRange()}, 
+                                           click: $parent.machine.setMachines">
+                            </li>
+                        </ul>
+                    </td>
+                    <td>
+                        <h4>Machine Name</h4>
+                        <ul data-bind="foreach: machine.machines">
+                            <li data-bind="text: $data.machineName,
+                                            css: {selected: $data.machineName == $root.project.machine.machineName()},
+                                            visible: ($root.user.machines.indexOf($data.id) != -1 && $data.introduced == 'yes'),
+                                            click: $parent.machine.setMachineName">
+                            </li>
+                        </ul>
+                    </td>
+                    <td>
+                        <h4>Quotation Type</h4>
+                        <ul data-bind="foreach: machine.machineQuotationTypes">
+                            <li data-bind="text: $data,										
+                                           click: function () {
+										   console.log($parent.machine.machines());
+										   if($parent.machine.id == 'machine_0c2462317d009170a487ba5519006abb' || $parent.machine.id == 'machine_3cac13dec1b04d5db8e2ef9c1ed2eea5' || $parent.machine.id == '1D6237A45264E20218413A22ED6AEA95'){
+										       showExchangeRatePrompt($root.machine.currentDefaultCurrency);
+										   }
+										   $parent.machine.setQuotationType($data); },
+                                           visible: $root.project.machine.machineName() != ''">
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+            </table>
+        </div>
+	</script>
+	
+	<script type="text/html" id="Machine Options">
+		<div class="stage">
+			<div class="container-machine-options full-width">
+                <div data-bind="visible: machineOptions.inStandardMode()">
+                    <ul class="options-standard"data-bind="foreach: machineOptions.options_standard">
+                        <li>
+                            <h2 class="category-name-header" data-bind="text: $data.subject"></h2>
+                            <!-- ko if: $data.subject.indexOf("Cutting Shapes") != -1 -->
+                            <!-- ko if: $root.cuttingShapes = $data --><!-- /ko -->
+								<!--p>Apply an industry preset selection...</p>
+                                <select class="industry-options" data-bind="options: ['Standard', 'Steel', 'Process', 'Offshore', 'Ship', 'Other'], value: $root.industry"></select-->
+                            <!-- /ko -->
+                            <div class="subject-block" data-bind="foreach: $data.chapters">
+                                <div class="chapter">
+                                    <p data-bind="text: $data.chapterName"></p>
+                                    <p data-bind="text: $data.getTotal()"></p>
+                                </div>
+                                <div class="option-block">
+                                    <div data-bind="foreach: $data.options">
+                                        <div class="option" data-bind="click: $parent.selector.onClick,
+                                                                       css: { selected_option: $data.isSelected,
+                                                                              required_option: $data.isRequired,
+                                                                              disabled_option: $data.isDisabled}">												   
+                                            <div data-bind="if: $parent.checkbox">
+                                                <div class="checkbox">
+                                                    <div class="box-checked" data-bind="visible: $data.isSelected"></div>
+                                                </div>
+                                            </div>
+                                            <div class="name" data-bind="text: $data.name"></div>
+                                            <div class="price" data-bind="text:
+												 ($data.isUSD() == 'True')==($root.project.price.offer_settings.currency() == 'EUR') ? 
+												($data.price * $root.project.price.offer_settings.exchange_rate()).toFixed():$data.price,
+												click: function() {console.log($data)}"></div>
+                                            <div class="options" data-bind="if: $data.type == 'MULTIPLE'">
+                                                <select data-bind="options: [1,2,3,4,5,6,7,8,9,10], value: $data.quantity, enable: $data.isSelected" onclick="event.stopPropagation()"></select>
+                                            </div>
+                                            <div class="options" data-bind="if: $data.type == 'LENGTH'">
+                                                <input size="2" data-bind="value: $data.quantity, enable: $data.isSelected" onclick="event.stopPropagation()"></input>
+                                            </div>
+                                            <div class="info">
+                                                <span data-bind="popOver: {content: $data.description(), title: $data.name}">i</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="clear-float"></div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div data-bind="visible: !machineOptions.inStandardMode()">
+                    <ul class="options-optional" data-bind="foreach: machineOptions.options_optional">
+                        <li>
+                            <h2 class="category-name-header" data-bind="text: $data.subject"></h2>
+                            <div class="subject-block" data-bind="foreach: $data.chapters">
+                                <div class="chapter">
+                                    <p data-bind="text: $data.chapterName"></p>
+                                    <p data-bind="text: $data.getTotal()"></p>
+                                </div>
+                                <div class="option-block">
+                                    <div data-bind="foreach: $data.options">
+                                        <div class="option" data-bind="click: $parent.selector.onClick,
+                                                                       css: { selected_option: $data.isSelected,
+                                                                              required_option: $data.isRequired,
+                                                                              disabled_option: $data.isDisabled}">
+                                            <div data-bind="if: $parent.checkbox">
+                                                <div class="checkbox">
+                                                    <div class="box-checked" data-bind="visible: $data.isSelected"></div>
+                                                </div>
+                                            </div>
+                                            <div class="name" data-bind="text: $data.name"></div>
+                                            <div class="price" data-bind="text:
+												 ($data.isUSD() == 'True')==($root.project.price.offer_settings.currency() == 'EUR') ? 
+												($data.price * $root.project.price.offer_settings.exchange_rate()).toFixed():$data.price,
+												click: function() {console.log($data)}"></div>
+                                            <div class="options" data-bind="if: $data.type == 'MULTIPLE'">
+                                                <select data-bind="options: [1,2,3,4,5,6,7,8,9,10], value: $data.quantity, enable: $data.isSelected" onclick="event.stopPropagation()"></select>
+                                            </div>
+                                            <div class="options" data-bind="if: $data.type == 'LENGTH'">
+                                                <input size="2" data-bind="value: $data.quantity, enable: $data.isSelected" onclick="event.stopPropagation()"></input>
+                                            </div>
+                                            <div class="info">
+                                                <span data-bind="popOver: {content: $data.description(), title: $data.name}">i</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="clear-float"></div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+			<div class="switch-bar full-width">
+                <div class="switch-button-container">
+                    <a data-bind="css: {selected: machineOptions.inStandardMode()}, click: machineOptions.goToStandard">Standard</a>
+                    <a data-bind="css: {selected: (machineOptions.inStandardMode() == false)}, click: machineOptions.goToOptional">Optional</a>
+                </div>
+			</div>
+            <!--div class="floating-total">
+                <span data-bind="text: project.machine.machineName"></span>
+            </div-->
+        </div>
+	</script>
+	<script type="text/html" id="New Components">
+        <div class="stage">
+            <div class="container">
+                <!-- div class="convert-button-container"><button>Convert to Special</button></div> -->
+                <div class="form form-static" data-bind="css: {editMode: newComponents.editMode}">
+                    <h4 class="form-title" data-bind="text: newComponents.formTitle">Add New Component</h4>
+                    <p><label>Component Name:</label><input class="textbox" data-bind="value: newComponents.componentName"></input></p>
+                    <p><label>Subject:</label><select data-bind="options: newComponents.subjects, value: newComponents.selectedSubject, event: {change: newComponents.onSubjectChange}"></select></p>
+                    <p><label>Chapter:</label><select data-bind="options: newComponents.chapters, value: newComponents.selectedChapter"></select></p>
+                    <p><label>Price:</label><input type="number" class="textbox" data-bind="value: newComponents.price"></input></p>
+					<p><label>Quantity:</label><input type="number" class="textbox" data-bind="value: newComponents.quantity"></input></p>
+                    <div class="cb-container">
+						<input class="checkbox" type="checkbox" data-bind="checked: newComponents.optional">Optional</input>
+					</div>
+                    <p><label class="description-label">Description:</label><textarea rows="7" cols="20" data-bind="value: newComponents.description"></textarea></p>                    
+                    <!--<p>
+                        <label>Document (PDF):</label>
+                        <span class="textbox">
+                            <a class="file-link" data-bind="text: newComponents.document, click: newComponents.viewPdf"></a><br>
+                            <button data-bind="click: newComponents.browseFile">Browse</button>
+                            <input class="textbox" id="file-browser-new" type="file" data-bind="event: {change: newComponents.uploadPdf}"></input>
+                        </span>
+                    </p> -->
+                    <p class="add-button-container">    
+                        <!-- ko ifnot: newComponents.editMode --> 
+                            <a class="button button-medium" data-bind="click: newComponents.addNewComponent">Add</a>
+                        <!-- /ko -->
+                        <!-- ko if: newComponents.editMode -->
+                            <a class="button button-medium" data-bind="if: newComponents.editMode, click: newComponents.updateItem">Save</a>
+                        <!-- /ko -->
+                    </p>
+                </div>
+                <div class="table-container">
+                    <table class="table-components">
+                        <tr class="table-header">
+                            <th>Component Name</th>
+                            <th>Description</th>
+                            <th>Price</th>
+                            <th>Quantity</th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                        </tr>
+                        <tr class="category-header"><td>Standard</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <!-- ko foreach: $root.newComponents.standardNC -->
+                            <tr class="new-comps" data-bind="css: {editMode: $root.newComponents.standardNC.indexOf($data) == $root.newComponents.selectedStandardItemIndex()},
+																style: {color: $data.uncategorized ? 'red' : 'black'}">
+                                <td class="component-col" data-bind="text: name"></td>
+                                <td class="description-col" data-bind="text: description"></td>
+                                <td class="price-col" data-bind="text: price"></td>
+                                <td class="quantity-col" data-bind="text: quantity"></td>
+                                <td class="document-col" data-bind="text: document"></td>
+                                <td class="remove-col" data-bind="click: $parent.newComponents.editItem"><a data-bind="visible: !($root.newComponents.editMode())">Edit</a></td>
+                                <td class="remove-col" data-bind="click: $parent.newComponents.removeStandardNewComponent"><a data-bind="visible: !($root.newComponents.editMode())">Delete</a></td>
+                            </tr>
+                        <!-- /ko -->
+                        <tr class="category-header"><td>Optional</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <!-- ko foreach: $root.newComponents.optionalNC -->
+                            <tr class="new-comps" data-bind="css: {editMode: $root.newComponents.optionalNC.indexOf($data) == $root.newComponents.selectedOptionalItemIndex()}">
+                                <td class="component-col" data-bind="text: name"></td>
+                                <td class="description-col" data-bind="text: description"></td>
+                                <td class="price-col" data-bind="text: price"></td>
+                                <td class="quantity-col" data-bind="text: quantity"></td>
+                                <td class="document-col" data-bind="text: document"></td>
+                                <td class="remove-col" data-bind="click: $parent.newComponents.editItem"><a data-bind="visible: !($root.newComponents.editMode())">Edit</a></td>
+                                <td class="remove-col" data-bind="click: $parent.newComponents.removeOptionalNewComponent"><a data-bind="visible: !($root.newComponents.editMode())">Delete</a></td>
+                            </tr>
+                        <!-- /ko -->
+                    </table>
+                </div>
+            </div>
+        </div>
+	</script>
+    <script type="text/html" id="Complementary Goods">
+        <div class="stage">
+            <div class="container">
+                <!-- div class="convert-button-container"><button>Convert to Special</button></div> -->
+                <div class="form form-static" data-bind="css: {editMode: complementaryGoods.editMode}">
+                    <h4 class="form-title" data-bind="text: complementaryGoods.formTitle">Add New Component</h4>
+                    <p><label>Chapter:</label><select data-bind="options: complementaryGoods.chapters, value: complementaryGoods.selectedChapter"></select></p>
+                    <p><label>Part Name:</label><select data-bind="options: complementaryGoods.partNames, value: complementaryGoods.selectedPartName, event: {change: complementaryGoods.onPartNameChange}"></select></p>
+                    <p><label>Component Name:</label><input class="textbox" data-bind="value: complementaryGoods.componentName"></input></p>
+                    <p><label>Price:</label><input type="number" class="textbox" data-bind="value: complementaryGoods.price"></input></p>
+					<p><label>Quantity:</label><input type="number" class="textbox" data-bind="value: complementaryGoods.quantity"></input></p>
+                    <div class="cb-container">
+						<input class="checkbox" type="checkbox" data-bind="checked: complementaryGoods.optional">Optional</input>
+					</div>
+                    <p><label class="description-label">Description:</label><textarea rows="7" cols="20" data-bind="value: complementaryGoods.description"></textarea></p>                    
+                    <p></p>
+                    <!--<p>
+                        <label>Document (PDF):</label>
+                        <span class="textbox">
+                            <a class="file-link" data-bind="text: complementaryGoods.document, click: complementaryGoods.viewPdf"></a><br>
+                            <button data-bind="click: complementaryGoods.browseFile">Browse</button>
+                            <input class="textbox" id="file-browser-cg" type="file" data-bind="event: {change: complementaryGoods.uploadPdf}"></input>
+                        </span>
+                    </p> -->
+                    <p class="add-button-container">
+                        <!-- ko ifnot: complementaryGoods.editMode --> 
+                            <a class="button button-medium" data-bind="click: complementaryGoods.addComplementaryGood">Add</a>
+                        <!-- /ko -->
+                        <!-- ko if: complementaryGoods.editMode -->
+                            <a class="button button-medium" data-bind="if: complementaryGoods.editMode, click: complementaryGoods.updateItem">Save</a>
+                        <!-- /ko -->
+                    </p>
+                </div>
+                <div class="table-container">
+                    <table class="table-components">
+                        <tr class="table-header">
+                            <th>Component Name</th>
+                            <th>Description</th>
+                            <th>Price</th>
+                            <th>Quantity</th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                        </tr>
+                        <tr class="category-header"><td>Standard</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <!-- ko foreach: $root.complementaryGoods.standardCG -->
+                            <tr class="new-comps" data-bind="css: {editMode: $root.complementaryGoods.standardCG.indexOf($data) == $root.complementaryGoods.selectedStandardItemIndex()}">
+                                <td class="component-col" data-bind="text: $data.name"></td>
+                                <td class="description-col" data-bind="text: $data.description"></td>
+                                <td class="price-col" data-bind="text: $data.price"></td>
+                                <td class="quantity-col" data-bind="text: $data.quantity"></td>
+                                <td class="document-col" data-bind="text: $data.document"></td>
+                                <td class="remove-col" data-bind="click: $parent.complementaryGoods.editItem"><a data-bind="visible: !($root.complementaryGoods.editMode())">Edit</a></td>
+                                <td class="remove-col" data-bind="click: $parent.complementaryGoods.removeComplementaryGood"><a data-bind="visible: !($root.complementaryGoods.editMode())">Delete</a></td>
+                            </tr>
+                        <!-- /ko -->
+                        <tr class="category-header"><td>Optional</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <!-- ko foreach: $root.complementaryGoods.optionalCG -->
+                            <tr class="new-comps" data-bind="css: {editMode: $root.complementaryGoods.optionalCG.indexOf($data) == $root.complementaryGoods.selectedOptionalItemIndex()}">
+                                <td class="component-col" data-bind="text: $data.name"></td>
+                                <td class="description-col" data-bind="text: $data.description"></td>
+                                <td class="price-col" data-bind="text: $data.price"></td>
+                                <td class="quantity-col" data-bind="text: $data.quantity"></td>
+                                <td class="document-col" data-bind="text: $data.document"></td>
+                                <td class="remove-col" data-bind="click: $parent.complementaryGoods.editItem"><a data-bind="visible: !($root.complementaryGoods.editMode())">Edit</a></td>
+                                <td class="remove-col" data-bind="click: $parent.complementaryGoods.removeComplementaryGood"><a data-bind="visible: !($root.complementaryGoods.editMode())">Delete</a></td>
+                            </tr>
+                        <!-- /ko -->
+                    </table>
+                </div>
+            </div>
+        </div>
+	</script>		
+    <script type="text/html" id="Price">
+        <div class="stage">
+            <div class="settings-pane full-width">
+                <table class="price-config">
+                    <tr>
+                        <th>
+							<!-- ko if: !$root.privilege.isAgent -->
+                            <label>Initial Machine Price</label>
+                            <div><label data-bind="text: project.machine.initialPrice"></label></div>
+							<!-- /ko -->
+                        </th>
+						<!-- ko if: !$root.privilege.isAgent -->
+                        <th>% Commission</th>
+                        <th>% Negotiation</th>
+						<!-- /ko -->
+                        <th>
+                            <label>Discount</label>
+                            <div>
+                                <select data-bind="options: price.discountTypes, value: project.price.standard_discount_type"></select>
+                            </div>
+                        </th>
+                    </tr>
+                    <tr class="scope-row">
+                        <td><label>Scope of Supply</label></td>
+						<!-- ko if: !$root.privilege.isAgent -->
+                        <td><input data-bind="value: project.price.standard_commission" name="std_com" onkeypress="if(onEnter(event)) shiftFocusTo('std_neg')"></input></td>
+                        <td><input data-bind="value: project.price.standard_negotiation" name="std_neg" onkeypress="if(onEnter(event)) shiftFocusTo('std_dis')"></input></td>
+                        <!-- /ko -->
+						<td><input data-bind="value: project.price.standard_discount" name="std_dis" onkeypress="if(onEnter(event)) shiftFocusTo('opt_com')"></input></td>
+                    </tr>
+                    <tr class="options-row">
+                        <td><label>Options</label></td>
+						<!-- ko if: !$root.privilege.isAgent -->
+                        <td><input data-bind="value: project.price.optional_commission" name="opt_com" onkeypress="if(onEnter(event)) shiftFocusTo('opt_neg')"></input></td>
+                        <td><input data-bind="value: project.price.optional_negotiation" name="opt_neg" onkeypress="if(onEnter(event)) shiftFocusTo('std_com')"></input></td>
+                        <!-- /ko -->
+						<td></td>
+                    </tr>
+                </table>
+                <fieldset class="offer-settings">
+                    <legend>Offer Settings</legend>                      
+                    <div id="exchange-rate-options">
+                        <p>
+                            <label>Date:</label>
+                            <input type="date" data-bind="value: project.price.offer_settings.date"/>
+                        </p>
+                        <p>
+                            <label>Currency:</label>
+                            <select data-bind="options: price.currencyTypes, value: project.price.offer_settings.currency, event: {change: price.onCurrencyChange}"></select>
+                        </p>
+                        <p>
+                            <label data-bind="text: 'Exchange Rate(' + (project.price.offer_settings.currency() == 'USD' ? '€ to $' : '$ to €') + '): '">Exchange Rate:</label>                            
+							<input class="exchange-rate" type="text" pattern="\d+(\.\d+)?" data-bind="value: project.price.offer_settings.exchange_rate"></input>
+                        </p>
+                        <p>
+                            <label>Number Format:</label>
+                            <select data-bind="options: ['.', ','], value: project.price.offer_settings.number_format"></select>
+                            <span data-bind="text: ' ' + project.price.offer_settings.currency() + ' ' + price.formatPrice(987654321)"></span>
+                        </p>
+                    </div>
+                </fieldset>
+            </div>
+            <div class="options-pane full-width">
+                <table class="price-table">
+                    <tr class="price-table-header">
+                        <th><h4>Scope of Supply</h4></th>
+                        <th></th>
+                        <th>Quantity</th>
+						<!-- ko if: !$root.privilege.isAgent -->
+                        <th>Minimum Sales Price <span data-bind="text: ' (' + project.price.offer_settings.currency() + ')'"></span></th>
+                        <th>With Commissions and Negotiation<span data-bind="text: ' (' + project.price.offer_settings.currency() + ')'"></span></th>
+						<!-- /ko -->
+						<!-- ko if: $root.privilege.isAgent -->
+						<th></th>
+						<th></th>
+						<!-- /ko -->
+                        <th>Discounted<span data-bind="text: ' (' + project.price.offer_settings.currency() + ')'"></span></th>
+                    </tr>
+                    <!-- ko foreach:  $root.machineOptions.options_standard-->
+                        <!-- ko if: $root.machineOptions.hasSelection($root.machineOptions.options_standard, $data.subject) || $root.newComponents.hasNewComponent($root.newComponents.standardNC, $data.subject) -->
+                            <tr class="subject-header">
+                                <td data-bind="text: $data.subject"></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <!-- ko foreach: $data.chapters-->
+                                <!-- ko if: $root.price.setCurrentChapterName($data.chapterName) --><!-- /ko -->
+                                <!-- ko foreach: $data.options-->
+                                <tr data-bind="if: $data.isSelected">
+                                    <td class="chapter-col" data-bind="text: $root.price.currentChapterName"></td>
+                                    <td class="option-name-col" data-bind="text: $data.name"></td>
+                                    <td class="quantity-col" data-bind="text: $data.quantity"></td>
+									<!-- ko if: $data.isUSD() == 'True' -->
+										<td class="price-col" style="color:Green" data-bind="text: $root.price.formatPrice($root.price.computeMSP($data.price, $data.quantity(), $root.project.price.offer_settings.exchange_rate(), $data.isUSD())), 
+																	visible: !$root.privilege.isAgent,
+																	popOverLeft: {content: 'This price is based on USD. In EUR quotations, this is converted via Exchange Rate.', title: 'USD based price', placement: 'left'}"></td>
+										<td class="cn-col"  style="color:Green" data-bind="text: $root.price.formatPrice($root.price.computeCN($data.price, $root.project.price.standard_commission(), $root.project.price.standard_negotiation(), $data.quantity(), $root.project.price.offer_settings.exchange_rate(), $data.isUSD())), 
+																	visible: !$root.privilege.isAgent,
+																	popOverLeft: {content: 'This price is based on USD. In EUR quotations, this is converted via Exchange Rate.', title: 'USD based price', placement: 'left'}"></td>
+									<!-- /ko -->
+									<!-- ko if: $data.isUSD() !== 'True' -->
+										<td class="price-col" data-bind="text: $root.price.formatPrice($root.price.computeMSP($data.price, $data.quantity(), $root.project.price.offer_settings.exchange_rate(), $data.isUSD())), 
+																	visible: !$root.privilege.isAgent"></td>
+										<td class="cn-col"  data-bind="text: $root.price.formatPrice($root.price.computeCN($data.price, $root.project.price.standard_commission(), $root.project.price.standard_negotiation(), $data.quantity(), $root.project.price.offer_settings.exchange_rate(), $data.isUSD())), 
+																	visible: !$root.privilege.isAgent"></td>
+									<!-- /ko -->
+                                    <!-- ko if: $root.price.setCurrentChapterName('') --><!-- /ko -->
+                                </tr>
+                                <!-- /ko -->
+                                <!-- ko foreach: $root.project.newComponents.standard[$parent.subject][$data.chapterName]-->
+                                    <tr>
+                                        <td class="chapter-col" data-bind="text: $root.price.currentChapterName"></td>
+                                        <td class="option-name-col" data-bind="text: $data.name"></td>
+                                        <td class="quantity-col" data-bind="text: $data.quantity"></td>
+                                        <td class="price-col" data-bind="text: $root.price.formatPrice($root.price.computeMSP($data.price, $data.quantity, $root.project.price.offer_settings.exchange_rate()))"></td>
+                                        <td class="cn-col" data-bind="text: $root.price.formatPrice($root.price.computeCN($data.price, $root.project.price.standard_commission(), $root.project.price.standard_negotiation(), $data.quantity, $root.project.price.offer_settings.exchange_rate()))"></td>	
+                                        <!-- ko if: $root.price.setCurrentChapterName('') --><!-- /ko -->
+                                    </tr>	
+                                <!-- /ko -->
+                            <!-- /ko -->
+                        <!-- /ko -->
+                    <!-- /ko -->
+                    <!-- ko if: $root.complementaryGoods.hasComplementaryGoods('standard') -->
+                        <!-- ko if: $root.price.setCurrentChapterName('') --><!-- /ko -->
+                        <tr class="subject-header">
+                            <td>Additional Goods</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <!-- ko foreach: $root.complementaryGoods.standardCG -->
+                            <!-- ko if: ($root.price.currentChapterName != $data.chapter) -->
+                                <!-- ko if: $root.price.setCurrentChapterName($data.chapter) --><!-- /ko -->
+                                <!-- ko if: $root.price.chapterDisplay = $data.chapter --><!-- /ko -->
+                            <!-- /ko -->
+                            <tr>
+                                <td class="chapter-col" data-bind="text: $root.price.chapterDisplay"></td>
+                                <td class="option-name-col" data-bind="text: $data.name"></td>
+                                <td class="quantity-col" data-bind="text: $data.quantity"></td>
+                                <td class="price-col" data-bind="text: $root.price.formatPrice($root.price.computeMSP($data.price, $data.quantity, $root.project.price.offer_settings.exchange_rate())), visible: !$root.privilege.isAgent"></td>
+                                <td class="cn-col" data-bind="text: $root.price.formatPrice($root.price.computeCN($data.price, $root.project.price.standard_commission(), $root.project.price.standard_negotiation(), $data.quantity, $root.project.price.offer_settings.exchange_rate())), visible: !$root.privilege.isAgent"></td>
+                                <!-- ko if: $root.price.chapterDisplay = '' --><!-- /ko -->
+                            </tr>
+                        <!-- /ko -->
+                    <!-- /ko -->
+                    <tr class="total-row">
+                        <td>TOTAL: </td>
+                        <td></td>
+                        <td></td>
+                        <td class="price-col" data-bind="text: project.price.offer_settings.currency() + ' ' + price.formatPrice(price.totalMSP()), visible: !$root.privilege.isAgent"></td>
+                        <td class="cn-col" data-bind="text: project.price.offer_settings.currency() + ' ' + price.formatPrice(price.totalCN()), visible: !$root.privilege.isAgent"></td>
+						<td class="price-col" data-bind="visible: $root.privilege.isAgent"></td>
+						<td class="cn-col" data-bind="visible: $root.privilege.isAgent"></td>
+                        <td class="price-col" data-bind="text: project.price.offer_settings.currency() + ' ' + price.formatPrice(price.totalDiscounted())"></td>                              
+                    </tr>
+                </table>
+                
+                <table class="price-table">
+                    <tr>
+                        <th><h4>Option List</h4></th>
+                        <th></th>
+                        <th>Quantity</th>
+						<!-- ko if: !$root.privilege.isAgent -->
+                        <th>Minimum Sales Price<text data-bind="text: ' (' + project.price.offer_settings.currency() + ')'"></text></th>
+                        <th>With Commissions and Negotiation<text data-bind="text: ' (' + project.price.offer_settings.currency() + ')'"></text></th>
+                        <!-- /ko -->
+						<!-- ko if: $root.privilege.isAgent -->
+						<th></th>
+						<th></th>
+						<!-- /ko -->
+						<th></th>
+                    </tr>
+                    <!-- ko foreach:  $root.machineOptions.options_optional-->
+                        <!-- ko if: $root.machineOptions.hasSelection($root.machineOptions.options_optional, $data.subject) || $root.newComponents.hasNewComponent($root.newComponents.optionalNC, $data.subject)-->
+                            <tr class="subject-header" >
+                                <td data-bind="text: $data.subject"></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <!-- ko foreach: $data.chapters-->
+                                <!-- ko if: $root.price.setCurrentChapterName($data.chapterName) --><!-- /ko -->
+                                <!-- ko foreach: $data.options-->
+                                <tr data-bind="if: $data.isSelected">
+                                    <td class="chapter-col" data-bind="text: $root.price.currentChapterName"></td>
+                                    <td class="option-name-col" data-bind="text: $data.name"></td>
+                                    <td class="quantity-col" data-bind="text: $data.quantity"></td>
+                                    <!-- ko if: $data.isUSD() == 'True' -->
+										<td class="price-col" style="color:Green" data-bind="text: $root.price.formatPrice($root.price.computeMSP($data.price, $data.quantity(), $root.project.price.offer_settings.exchange_rate(), $data.isUSD())), 
+																	visible: !$root.privilege.isAgent,
+																	popOverLeft: {content: 'This price is based on USD. In EUR quotations, this is converted via Exchange Rate.', title: 'USD based price', placement: 'left'}"></td>
+										<td class="cn-col"  style="color:Green" data-bind="text: $root.price.formatPrice($root.price.computeCN($data.price, $root.project.price.optional_commission(), $root.project.price.optional_negotiation(), $data.quantity(), $root.project.price.offer_settings.exchange_rate(), $data.isUSD())), 
+																	visible: !$root.privilege.isAgent,
+																	popOverLeft: {content: 'This price is based on USD. In EUR quotations, this is converted via Exchange Rate.', title: 'USD based price', placement: 'left'}"></td>
+									<!-- /ko -->
+									<!-- ko if: $data.isUSD() !== 'True' -->
+										<td class="price-col" data-bind="text: $root.price.formatPrice($root.price.computeMSP($data.price, $data.quantity(), $root.project.price.offer_settings.exchange_rate(), $data.isUSD())), 
+																	visible: !$root.privilege.isAgent"></td>
+										<td class="cn-col"  data-bind="text: $root.price.formatPrice($root.price.computeCN($data.price, $root.project.price.optional_commission(), $root.project.price.optional_negotiation(), $data.quantity(), $root.project.price.offer_settings.exchange_rate(), $data.isUSD())), 
+																	visible: !$root.privilege.isAgent"></td>
+									<!-- /ko -->
+                                    <!-- ko if: $root.price.setCurrentChapterName('') --><!-- /ko -->
+                                </tr>
+                                <!-- /ko -->
+                                    <!-- ko foreach: $root.project.newComponents.optional[$parent.subject][$data.chapterName]-->
+                                        <tr>
+                                            <td class="chapter-col" data-bind="text: $root.price.currentChapterName"></td>
+                                            <td class="option-name-col" data-bind="text: $data.name"></td>
+                                            <td class="quantity-col" data-bind="text: $data.quantity"></td>
+                                            <td class="price-col" data-bind="text: $root.price.formatPrice($root.price.computeMSP($data.price, $data.quantity, $root.project.price.offer_settings.exchange_rate()))"></td>
+                                            <td class="cn-col" data-bind="text: $root.price.formatPrice($root.price.computeCN($data.price, $root.project.price.optional_commission(), $root.project.price.optional_negotiation(), $data.quantity, $root.project.price.offer_settings.exchange_rate()))"></td>			
+                                            <td></td>
+                                            <!-- ko if: $root.price.setCurrentChapterName('') --><!-- /ko -->
+                                        </tr>
+                                    <!-- /ko -->
+                            <!-- /ko -->
+                        <!-- /ko -->
+                    <!-- /ko -->
+                    <!-- ko if: $root.complementaryGoods.hasComplementaryGoods('optional') -->
+                        <!-- ko if: $root.price.setCurrentChapterName('') --><!-- /ko -->
+                        <tr class="subject-header" >
+                            <td>Additional Goods</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <!-- ko foreach: $root.complementaryGoods.optionalCG -->
+                            <!-- ko if: ($root.price.currentChapterName != $data.chapter) -->
+                                <!-- ko if: $root.price.setCurrentChapterName($data.chapter) --><!-- /ko -->
+                                <!-- ko if: $root.price.chapterDisplay = $data.chapter --><!-- /ko -->
+                            <!-- /ko -->
+                            <tr>
+                                <td class="chapter-col" data-bind="text: $root.price.chapterDisplay"></td>
+                                <td class="option-name-col" data-bind="text: $data.name"></td>
+                                <td class="quantity-col" data-bind="text: $data.quantity"></td>
+                                <td class="price-col" data-bind="text: $root.price.formatPrice($root.price.computeMSP($data.price, $data.quantity, $root.project.price.offer_settings.exchange_rate()))"></td>
+                                <td class="cn-col" data-bind="text: $root.price.formatPrice($root.price.computeCN($data.price, $root.project.price.optional_commission(), $root.project.price.optional_negotiation(), $data.quantity, $root.project.price.offer_settings.exchange_rate()))"></td>
+                                <!-- ko if: $root.price.chapterDisplay = '' --><!-- /ko -->
+                            </tr>
+                        <!-- /ko -->
+                    <!-- /ko -->
+                    <tr class="total-row">
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td class="price-col"></td>
+                        <td class="cn-col"></td>
+                        <td class="price-col"></td>
+                    </tr>
+                </table>
+            </div>
+		</div>
+	</script>
+	<script type="text/html" id="Offer">
+		<div class="button-bar">
+			<a class="button button-medium" data-bind="click: offer.createOffer">Create Offer</a>
+			<a class="button button-medium" data-bind="click: offer.createDraft">Create Draft</a>
+		</div>
+		<div class="stage">
+            <div id="throbber">
+                <h2>Generating Offer...</h2>
+				<div style="width:250px;height:50px;">
+                <iframe style="width:100%;height:100%;" scrolling="no" src="/prooffer/pdf_generator_status_frame"></iframe>
+				</div>
+                <img src='/static/img/ajax-loader.gif'></img>
+            </div>  
+            <div class="sidebar">
+                <h4>Visibility Options</h4>
+                <div class="visibility-options" data-bind="foreach: $root.offer.visibilityOptions">
+                    <p data-bind="if: $data.type == 'standard'">
+                        <input type="checkbox" data-bind="checked: $data.include, click: $root.offer.includeChanged"></input>
+                        <span class="additional-options" data-bind="text: $data.title"></span>
+                        <span class="sorter">
+                            <img data-bind="attr: { src: $root.offer.showArrowUp($data) }, click: $root.offer.optionUp"></img>
+                            <img data-bind="attr: { src: $root.offer.showArrowDown($data) }, click: $root.offer.optionDown"></img>
+                        </span>
+                    </p>
+                    <div data-bind="if: $data.type == 'custom'">
+                        <input type="checkbox" data-bind="checked: $data.include, click: $root.offer.includeChanged"></input>
+                        <input class="additional-options" data-bind="value: $data.title, event: {change: $root.offer.titleChanged}"></input>
+						<a data-bind="attr: { href: 'localhost:5984/prooffer_projects/' + $root.project.projectName + '/' + ($data.pdf || 'empty')}">
+                        <img data-bind="attr: { src: $root.offer.showActiveIcon($data)}"></img>
+						</a>
+                        <button data-bind="click: $root.offer.browsePdf">Browse</button>
+                        <span class="sorter">
+                            <img src="/static/img/up_arrow.png" data-bind="attr: { src: $root.offer.showArrowUp($data) }, click: $root.offer.optionUp"></img>
+                            <img src="/static/img/down_arrow.png" data-bind="attr: { src: $root.offer.showArrowDown($data) }, click: $root.offer.optionDown"></img>
+                        </span>
+                    </div>
+                </div>
+                <p><button data-bind="click: offer.addOption">Add Option</button></p>
+                <p><input class="additional-options" id="add-option-browse" type="file" data-bind="event: {change: offer.uploadPdf}"></input></p>
+            </div>	
+            <div class="offerview">
+				<div data-bind="visible: $root.project.include.frontCover">
+					<div class="chapterHeader">
+						<label>Cover Page</label>
+					</div>
+					<p>
+                        <label>Company Name: </label><span class="info-value" data-bind="text: $root.project.customerDetails.companyName"></span>
+                        <!--label>Email:</label> <span class="info-value" data-bind="text: $root.project.customerDetails.email"></span-->
+                    </p>
+                    <!--p>
+                        <label>Contact Person: </label><span class="info-value" data-bind="text: $root.project.customerDetails.contactPerson"></span>
+                        <label>Website: </label><span class="info-value" data-bind="text: $root.project.customerDetails.website"></span>
+                    </p-->
+                    <p>
+                        <label class="address-label">Address:</label>
+                        <div class="complete-address">
+                            <div data-bind="text: $root.project.customerDetails.fullAddress"></div>
+                            <div data-bind="text: $root.project.customerDetails.poBox"></div>
+                            <div data-bind="text: $root.project.customerDetails.city"></div>
+                            <div data-bind="text: $root.project.customerDetails.postalCode"></div>
+                            <div data-bind="text: $root.project.customerDetails.state"></div>
+                            <div data-bind="text: $root.project.customerDetails.country"></div>
+                        </div>
+                    </p>
+                    <div class="clear-float"></div>
+				</div>
+                <div data-bind="visible: $root.project.include.introduction">
+					<div class="chapterHeader">
+						<label>Introduction</label>
+						<span class="template-option-pane">
+							<select data-bind="options: offer.addressTemplates, value: offer.addressTemplate"></select>
+							<label>Address Template:</label>
+							<select data-bind="options: offer.introductionTemplates, value: offer.introductionTemplate"></select>
+							<label>Text Template:</label>
+						</span>
+					</div>
+					<div>
+                        <div style="width: 530pt; height: 500pt; float: left">
+							<textarea rows="30" id="introRichText" data-bind="richText: offer.introduction"></textarea>
+						</div>
+						<div data-bind="htmlValue: offer.address"></div>
+					</div>
+					<div class="clear-float"></div>
+                </div>
+                <div data-bind="visible: $root.project.include.quotation">
+                    <div class="chapterHeader">
+						<label>Quotation</label>
+						<ul class="show-options">
+							<li><input type="checkbox" data-bind="checked: $root.project.showDiscount">Show Discount</input></li>
+							<li><input type="checkbox" data-bind="checked: $root.project.showItemPrice">Show price per item</input></li>
+						</ul>
+					</div>
+                    <h4 data-bind="text: 'Quotation  Pipe Profiling Machine ' + $root.project.machine.machineName()"></h4>
+                    <p class="summary" data-bind="text: $root.project.machine.summary"></p>               
+                    
+                    <!-- ko foreach:  $root.machineOptions.options_standard-->
+                        <table class="offer-table">
+                            <tr></tr>
+                            <!-- ko if: $root.machineOptions.hasSelection($root.machineOptions.options_standard, $data.subject) || $root.newComponents.hasNewComponent($root.newComponents.standardNC, $data.subject) -->
+                                <tr class="row-spacer"></tr>
+                                <tr class="subject-header">
+                                    <th data-bind="text: $data.subject"></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th>Quantity</th>
+                                    <th data-bind="visible: $root.project.showItemPrice">Price<span data-bind="text: ' (' + $root.project.price.offer_settings.currency() + ')'"></span></th>
+                                </tr>
+                                <tr class="row-spacer"></tr>
+                                <!-- ko foreach: $data.chapters-->
+                                    <!-- ko if: $data.selector.hasSelection() || $root.newComponents.hasNewComponent($root.newComponents.standardNC, $parent.subject, $data.chapterName) -->
+                                        <!-- ko if: $root.offer.setCurrentChapterName($data.chapterName)--><!-- /ko -->                                            
+                                        <!-- ko foreach: $data.options -->
+                                            <!-- ko if: $data.isSelected -->
+                                            <tr>
+                                                <td class="chapter-col" data-bind="text: $root.offer.currentChapterName" class="chapterName-col"></td>											
+                                                <!-- ko if: $root.offer.setCurrentChapterName('')--><!-- /ko -->
+                                                <td class="option-name-col" data-bind="text: $data.name"></td>
+                                                <td class="description-col" data-bind="text: $data.description"></td>   
+                                                <td class="quantity-col" data-bind="text: $data.quantity"></td>
+                                                <td class="price-col" data-bind="text: $root.price.formatPrice($root.price.computeCN($data.price, $root.project.price.standard_commission(), $root.project.price.standard_negotiation(), $data.quantity(), $root.project.price.offer_settings.exchange_rate(), $data.isUSD())), visible: $root.project.showItemPrice"></td>
+                                            </tr>
+                                            <!-- /ko -->												
+                                        <!-- /ko -->
+                                        <!-- ko ifnot: $parent.subject == 'Complementary goods' -->
+                                            <!-- ko foreach: $root.project.newComponents.standard[$parent.subject][$data.chapterName]-->
+                                                <tr>
+                                                    <td class="chapter-col" data-bind="text: $root.offer.currentChapterName"></td>											
+                                                    <!-- ko if: $root.offer.setCurrentChapterName('')--><!-- /ko -->
+                                                    <td class="option-name-col" data-bind="text: $data.name"></td>
+                                                    <td class="description-col" data-bind="text: $data.description"></td>
+                                                    <td class="quantity-col" data-bind="text: $data.quantity"></td>
+                                                    <td class="price-col" data-bind="text: $root.price.formatPrice($root.price.computeCN($data.price, $root.project.price.standard_commission(), $root.project.price.standard_negotiation(), $data.quantity, $root.project.price.offer_settings.exchange_rate())), visible: $root.project.showItemPrice"></td>
+                                                </tr>
+                                            <!-- /ko -->
+                                        <!-- /ko -->
+                                    <!-- /ko -->
+                                <!-- /ko -->
+                            <!-- /ko -->
+                            </table>
+                        <!-- /ko -->
+                        <!-- ko if: $root.complementaryGoods.hasComplementaryGoods('standard') -->
+                            <!-- ko if: $root.price.setCurrentChapterName('') --><!-- /ko -->
+                            <table class="offer-table">
+                                <tr></tr>
+                                <tr class="row-spacer"></tr>
+                                <tr class="subject-header">
+                                    <th>Additional Goods</th>
+                                    <th></th>
+                                    <th></th>
+                                    <th>Quantity</th>
+                                    <th data-bind="visible: $root.project.showItemPrice">Price<span data-bind="text: ' (' + $root.project.price.offer_settings.currency() + ')'"></span></th>
+                                </tr>
+                                <tr class="row-spacer"></tr>
+                                <!-- ko foreach: $root.complementaryGoods.standardCG -->
+                                    <!-- ko if: ($root.price.currentChapterName != $data.chapter) -->
+                                        <!-- ko if: $root.price.setCurrentChapterName($data.chapter) --><!-- /ko -->
+                                        <!-- ko if: $root.price.chapterDisplay = $data.chapter --><!-- /ko -->
+                                    <!-- /ko -->
+                                    <tr>
+                                        <td class="chapter-col" data-bind="text: $root.price.chapterDisplay"></td>
+                                        <td class="option-name-col" data-bind="text: $data.name"></td>
+                                        <td class="description-col" data-bind="text: $data.description"></td>
+                                        <td class="quantity-col" data-bind="text: $data.quantity"></td>
+                                        <td class="price-col" data-bind="text: $root.price.formatPrice($root.price.computeCN($data.price, $root.project.price.standard_commission(), $root.project.price.standard_negotiation(), $data.quantity, $root.project.price.offer_settings.exchange_rate())), visible: $root.project.showItemPrice"></td>
+                                        <!-- ko if: $root.price.chapterDisplay = '' --><!-- /ko -->
+                                    </tr>
+                                <!-- /ko -->
+                            </table>
+                        <!-- /ko -->
+                        <table class="offer-table">
+                            <tr class="row-spacer"></tr>
+                            <!-- ko if: $root.project.showDiscount-->
+                                <tr>
+                                    <td class="chapter-col">PRICE:</td>
+                                    <td class="option-name-col"></td>
+                                    <td class="description-col"></td>
+                                    <!-- ko if: $root.project.showItemPrice -->
+                                        <td class="quantity-col"></td>
+                                    <!-- /ko -->
+                                    <td class="price-col" data-bind="text: $root.project.price.offer_settings.currency() + ' ' + price.formatPrice(price.totalCN())"></td>
+                                </tr>
+                                <tr>
+                                    <td class="chapter-col">DISCOUNT:</td>
+                                    <td class="option-name-col"></td>
+                                    <td class="description-col"></td>
+                                    <!-- ko if: $root.project.showItemPrice -->
+                                        <td class="quantity-col"></td>
+                                    <!-- /ko -->
+                                    <td class="price-col" data-bind="text: $root.project.price.offer_settings.currency() + ' ' + price.formatPrice(price.discount())"></td>
+                                </tr>
+                            <!-- /ko -->
+                            <tr class="total-row">
+                                <td class="chapter-col">TOTAL</td>
+                                <td class="option-name-col"></td>   
+                                <td class="description-col"></td>
+                                <!-- ko if: $root.project.showItemPrice --><td class="quantity-col"></td><!-- /ko -->
+                                <td class="price-col" data-bind="text: $root.project.price.offer_settings.currency() + ' ' + price.formatPrice(price.totalDiscounted())"></td>
+                            </tr>
+                    </table>
+                    <br/>
+                    <div class="option-list" data-bind="visible: offer.showOptionList">
+                        <h3>Option List</h3>
+                        <!-- ko foreach:  $root.machineOptions.options_optional-->
+                            <table class="offer-table">
+                            <tr></tr>
+                                <!-- ko if: $root.machineOptions.hasSelection($root.machineOptions.options_optional, $data.subject) || $root.newComponents.hasNewComponent($root.newComponents.optionalNC, $data.subject) -->
+                                    <tr class="row-spacer"></tr>
+                                    <tr class="subject-header">
+                                        <th data-bind="text: $data.subject"></th>
+                                        <th></th>
+                                        <th></th>
+                                        <th>Quantity</th>
+                                        <th>Price<span data-bind="text: ' (' + $root.project.price.offer_settings.currency() + ')'"></span></th>
+                                    </tr>
+                                    <tr class="row-spacer"></tr>
+                                    <!-- ko foreach: $data.chapters-->
+                                        <!-- ko if: $data.selector.hasSelection() || $root.newComponents.hasNewComponent($root.newComponents.optionalNC, $parent.subject, $data.chapterName) -->
+                                            <!-- ko if: $root.offer.setCurrentChapterName($data.chapterName)--><!-- /ko --> 
+                                            <!-- ko foreach: $data.options -->
+                                                <!-- ko if: $data.isSelected -->
+                                                <tr>
+                                                    <td class="chapter-col" data-bind="text: $root.offer.currentChapterName"></td>
+                                                    <!-- ko if: $root.offer.setCurrentChapterName('')--><!-- /ko -->
+                                                    <td class="option-name-col" data-bind="text: $data.name"></td>
+                                                    <td class="description-col" data-bind="text: $data.description"></td>
+                                                    <td class="quantity-col" data-bind="text: $data.quantity"></td>
+                                                    <td class="price-col" data-bind="text: $root.price.formatPrice($root.price.computeCN($data.price, $root.project.price.optional_commission(), $root.project.price.optional_negotiation(), $data.quantity(), $root.project.price.offer_settings.exchange_rate(), $data.isUSD()))"></td>
+                                                </tr>
+                                                <!-- /ko -->											
+                                            <!-- /ko -->
+                                            <!-- ko ifnot: $parent.subject == 'Complementary goods' -->
+                                                <!-- ko foreach: $root.project.newComponents.optional[$parent.subject][$data.chapterName]-->
+                                                    <tr>
+                                                        <td class="chapter-col" data-bind="text: $root.offer.currentChapterName"></td>
+                                                        <!-- ko if: $root.offer.setCurrentChapterName('')--><!-- /ko -->
+                                                        <td class="option-name-col" data-bind="text: $data.name"></td>
+                                                        <td class="description-col" data-bind="text: $data.description"></td>
+                                                        <td class="quantity-col" data-bind="text: $data.quantity"></td>
+                                                        <td class="price-col" data-bind="text: $root.price.formatPrice($root.price.computeCN($data.price, $root.project.price.optional_commission(), $root.project.price.optional_negotiation(), $data.quantity, $root.project.price.offer_settings.exchange_rate()))"></td>
+                                                    </tr>
+                                                <!-- /ko -->
+                                            <!-- /ko -->
+                                        <!-- /ko -->
+                                    <!-- /ko -->
+                                <!-- /ko -->
+                                </table>
+                            <!-- /ko -->
+                            <!-- ko if: $root.complementaryGoods.hasComplementaryGoods('optional') -->
+                                <!-- ko if: $root.price.setCurrentChapterName('') --><!-- /ko -->
+                                <table class="offer-table">
+                                    <tr></tr>
+                                    <tr class="row-spacer"></tr>
+                                    <tr class="subject-header">
+                                        <th>Additional Goods</th>
+                                        <th></th>
+                                        <th></th>
+                                        <th>Quantity</th>
+                                        <th>Price<span data-bind="text: ' (' + $root.project.price.offer_settings.currency() + ')'"></span></th>
+                                    </tr>
+                                    <tr class="row-spacer"></tr>
+                                    <!-- ko foreach: $root.complementaryGoods.optionalCG -->
+                                        <!-- ko if: ($root.price.currentChapterName != $data.chapter) -->
+                                            <!-- ko if: $root.price.setCurrentChapterName($data.chapter) --><!-- /ko -->
+                                            <!-- ko if: $root.price.chapterDisplay = $data.chapter --><!-- /ko -->
+                                        <!-- /ko -->
+                                        <tr>
+                                            <td class="chapter-col" data-bind="text: $root.price.chapterDisplay"></td>
+                                            <td class="option-name-col" data-bind="text: $data.name"></td>
+                                            <td class="description-col" data-bind="text: $data.description"></td>
+                                            <td class="quantity-col" data-bind="text: $data.quantity"></td>
+                                            <td class="price-col" data-bind="text: $root.price.formatPrice($root.price.computeCN($data.price, $root.project.price.optional_commission(), $root.project.price.optional_negotiation(), $data.quantity, $root.project.price.offer_settings.exchange_rate()))"></td>
+                                            <!-- ko if: $root.price.chapterDisplay = '' --><!-- /ko -->
+                                        </tr>
+                                    <!-- /ko -->
+                               </table>
+                            <!-- /ko -->
+                        <table class="offer-table">
+                            <tr class="row-spacer"></tr>
+                            <tr class="total-row">
+                                <td class="chapter-col"></td>
+                                <td class="option-name-col"></td>
+                                <td class="description-col"></td>
+                                <td class="quantity-col"></td>
+                                <td class="price-col"></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                <div data-bind="visible: $root.project.include.termsAndConditions">
+					<div class="chapterHeader">
+						<label>Terms and Conditions</label>
+						<span class="template-option-pane">
+							<select data-bind="options: offer.signatures, value: offer.currentSignature"></select>
+							<label>Signature:</label>
+							<!-- <button data-bind="click: offer.saveAsTCTemplate">Save as template</button> -->
+							<select data-bind="options: offer.termsAndConditionsTemplates, value: offer.termsAndConditionsTemplate"></select>
+							<label>Text Template:</label>
+						</span>
+					</div> 
+                    <div style="width: 730pt; float: left">
+						<textarea id="termsRichText" data-bind="richText: offer.termsAndConditions"></textarea>
+					</div>
+				</div>
+            </div>
+		</div>
+	</script>
+	<script type="text/javascript">
+		function onEnter(event) { return event.keyCode == 13;}
+		function shiftFocusTo(target) { document.getElementsByName(target)[0].focus();}
+	</script>
+	<script type="text/javascript" src="/static/js/jquery-1.7.2.min.js"></script>
+	<!--script type="text/javascript" src="/static/js/jquery-1.11.1.min.js"></script-->
+	<script type="text/javascript" src="/static/js/knockout-3.0.0.js"></script>
+	<script type="text/javascript" src="/static/js/utils.js"></script>
+    <script type="text/javascript" src="/static/lib/bootstrap/js/bootstrap.js"></script>
+    <script type="text/javascript" src="/static/lib/ckeditor/ckeditor.js"></script>
+    <script type="text/javascript" src="/static/js/countries.js"></script>
+	<script type="text/javascript" src="/static/js/data.js"></script>
+	<script type="text/javascript" src="/static/js/offerComponents.js"></script>
+	<script type="text/javascript" src="/static/js/prooffer.js"></script>
+</body>
+</html>

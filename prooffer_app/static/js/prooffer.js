@@ -1,0 +1,243 @@
+var prooffer_data = new Data();
+
+ko.bindingHandlers.showDialog = {
+    init: function(element, valueAccessor) {
+        $(element).hide();
+    },
+    update: function(element, valueAccessor) {
+        var maskHeight = $(document).height();
+        var maskWidth = $(window).width();
+        
+        var dialogTop =  (maskHeight/3) - ($(element).height()/2);  
+        var dialogLeft = (maskWidth/2) - ($(element).width()/2); 
+
+        var value = valueAccessor();
+
+        if (ko.utils.unwrapObservable(value)) {
+            $('<div id="dialog-overlay"></div>').prependTo('body');//$('#dialog-overlay').show();
+            $(element).css({top:dialogTop, left:dialogLeft}).fadeIn();
+        }
+        else {
+            $('#dialog-overlay').remove();
+            $(element).css({top:dialogTop, left:dialogLeft}).hide();
+        }
+    }
+};
+
+
+ko.bindingHandlers.richText = {
+	init: function(element, valueAccessor) {        
+            var txtBoxID = $(element).attr("id");
+			CKEDITOR.replace(txtBoxID);   
+			var modelValue = valueAccessor();
+			var value = ko.utils.unwrapObservable(valueAccessor());
+			
+			$(element).html(value);
+					
+            CKEDITOR.instances[txtBoxID].focusManager.blur = function () {
+                var observable = valueAccessor();
+				observable(CKEDITOR.instances[txtBoxID].getData());
+            };
+			
+			//handle disposal (if KO removes by the template binding)
+            ko.utils.domNodeDisposal.addDisposeCallback(element, function () {
+                if (CKEDITOR.instances[txtBoxID]) { CKEDITOR.remove(CKEDITOR.instances[txtBoxID]); };
+            });
+            
+		},
+     update: function (element, valueAccessor, allBindingsAccessor, viewModel) {
+        var val = ko.utils.unwrapObservable(valueAccessor());
+		var modelValue = valueAccessor();
+		//CKEDITOR.instances['ckeditor'].setData(val);
+		$(element).val(val);
+    }
+}
+
+
+ko.bindingHandlers.popOver = {
+    init: function(element, valueAccessor, allBindingsAccessor, viewModel) {
+        var options = valueAccessor();
+		options.placement = 'right';
+		options.trigger = 'hover';
+		options.container = 'body';
+		options.animation = false;
+        $(element).popover(options);
+    }
+};
+ko.bindingHandlers.popOverLeft = {
+    init: function(element, valueAccessor, allBindingsAccessor, viewModel) {
+        var options = valueAccessor();
+		options.placement = 'left';
+		options.trigger = 'hover';
+		options.container = 'body';
+		options.animation = false;
+        $(element).popover(options);
+    }
+};
+
+function ProOffer() {
+    var self = this;
+	
+	self.project = new Project();
+	
+	self.user = prooffer_data.getUserData();
+	self.privilege = prooffer_data.getUserPrivilegeData();
+    
+	self.stages = prooffer_data.getStages(); 
+    stageAlertMessages = { 'Machine Options': 'A quotation type must be selected first in the Machine Page',
+                            'New Components': 'A machine should be selected first in the Machine Page',
+                            'Complementary Goods': 'A machine should be selected first in the Machine Page',
+                            'Start': 'Clicking start will save and exit the current quotation and allows to open, revise or make new quotations. \n\nWould you like to proceed?'};
+	
+	self.currentStageId = ko.observable(self.stages[0]); 
+    self.hasStarted = ko.observable(false); 
+	self.industryDefaults = undefined;
+	self.cuttingShapes = undefined;
+	self.industry = ko.observable('Standard');
+    
+    self.startOptions = new StartOptions(self);
+    //self.startOptions.initializeProjectList();
+    self.customerDetails = new CustomerDetails(self);
+    self.machine = new Machine(self);
+	self.machineOptions = new MachineOptions(self);
+    self.newComponents = new NewComponents(self);
+    self.complementaryGoods = new ComplementaryGoods(self);
+    self.price = new Price(self);
+	self.offer = new Offer(self);
+
+	self.clear = function() {
+		self.machineOptions.clear();
+		self.price.clear();
+	};
+	
+	self.gotoStage = function(stage) {
+        switch (stage) {
+            case 'Start':
+                if (self.hasStarted() && confirm(stageAlertMessages[stage])) {
+                    self.hasStarted(false);
+                    self.currentStageId(stage);
+
+					//set self.offer.allowUpdate to false so offer preview will be refreshed when going to offer
+					self.offer.allowUpdate(false);
+                    if(self.startOptions.isProjectListDirty) {
+						self.startOptions.initializeProjectList();
+					}
+                }
+                break;
+            case 'Machine Options':
+            case 'New Components':
+            case 'Complementary Goods':
+                if(self.machineOptions.options_standard != undefined) self.currentStageId(stage);
+                else alert(stageAlertMessages[stage]);
+                break;
+            case 'Offer':
+                self.currentStageId(stage);
+                self.offer.introductionTemplate(self.project.introductionTemplate());
+                self.offer.termsAndConditionsTemplate(self.project.termsAndConditionsTemplate());
+				self.offer.introductionTemplate.valueHasMutated();
+				self.offer.termsAndConditionsTemplate.valueHasMutated();
+                self.offer.allowUpdate(true);
+                self.offer.hasOptionList();
+                break;
+			case 'Customer Details':
+				self.currentStageId(stage);
+				self.customerLogo.valueHasMutated();
+				break;
+            default:
+                self.currentStageId(stage);
+        }
+    };	
+	
+	self.isNumber = function(type) {
+		return type == 'NUMBER';
+	};
+	self.isQuantity = function(type) {
+		return type == 'QUANTITY';
+	};
+	self.isNormal = function(type) {
+		return type == 'NORMAL';
+	};
+	
+	self.revision = ko.observable('A');
+	self.sequence = ko.observable(self.user.sequence + 1);
+	self.currentRef = ko.computed(function(){
+		var d = new Date();
+        // FORMAT:  year.user.quote number.revision 
+        var referenceNumber = d.getFullYear().toString().slice(2) + "." + self.user.code + "." + pad(self.sequence(), 4) + "." + self.revision();
+        return referenceNumber;
+	});
+    
+    self.projectNumber = ko.observable();
+    self.machineName = ko.observable();
+    
+    self.updateFlag = ko.observable(false);
+	self.update = function() {
+		self.updateFlag(!self.updateFlag());
+	};
+	/*ko.computed(function() { 
+        self.updateFlag();
+		self.industry();			
+		if( self.cuttingShapes != undefined && self.industryDefaults != undefined) {
+			var industryDefaults = self.industryDefaults[self.industry()];
+			for(var i = 0; i < self.cuttingShapes.chapters.length; i++) { 
+				chapter = self.cuttingShapes.chapters[i];
+				for(var j = 0; j < chapter.options.length; j++) {
+					option = chapter.options[j];
+					if(industryDefaults.indexOf(option.id) != -1) {
+						if(!option._isSelected) chapter.selector.onClick(option);//chapter.selector.select(option);
+					}
+					else {						
+						if(option._isSelected) chapter.selector.onClick(option);//chapter.selector.deselect(option);
+					}
+				}
+			}
+		}
+	}, self);*/
+    
+    self.customerLogo = ko.observable();
+	
+	self.promptExchangeRate = ko.observable();
+		
+}
+
+ko.bindingHandlers.htmlValue = {
+    init: function(element, valueAccessor, allBindingsAccessor) {
+        ko.utils.registerEventHandler(element, "blur", function() {
+            var modelValue = valueAccessor();
+            var elementValue = element.innerHTML;
+            if (ko.isWriteableObservable(modelValue)) {
+                modelValue(elementValue);
+            }
+            else { //handle non-observable one-way binding
+                var allBindings = allBindingsAccessor();
+                if (allBindings['_ko_property_writers'] && allBindings['_ko_property_writers'].htmlValue) allBindings['_ko_property_writers'].htmlValue(elementValue);
+            }
+        })
+    },
+    update: function(element, valueAccessor) {
+        var value = ko.utils.unwrapObservable(valueAccessor()) || "";
+        element.innerHTML = value;
+    }
+};
+
+var proOffer = new ProOffer()
+
+proOffer.startOptions.initializeProjectList();
+
+ko.applyBindings(proOffer);
+
+function showExchangeRatePrompt(defaultcurrency) {
+	
+	if(defaultcurrency ==  'USD'){
+		prompttext = "Please input exchange rate(EUR to USD)";
+	}else{
+		prompttext = "Please input exchange rate(USD to EUR)";
+	}
+    var exchangeRate_in = prompt(prompttext, 1);
+    
+    if (exchangeRate_in != null) {
+        proOffer.promptExchangeRate(exchangeRate_in);
+    }else{
+		proOffer.promptExchangeRate('');
+	}
+}

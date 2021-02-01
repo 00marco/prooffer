@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+<p id="status"></p>
+<script type="text/javascript" src="/static/js/jquery-1.7.2.min.js"></script>
+<script type="text/javascript">
+	window.setInterval(function() {
+		$.ajax({
+			type: "GET",
+			url: "pdf_generator_status"
+		})
+		.done(function(response) {
+			$('#status').text(response);
+		});
+	}, 500);
+</script>
+</body>
+</html> 

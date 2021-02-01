@@ -1,0 +1,19 @@
+{ 
+    "centraldb":["http://192.168.0.59:5984",
+                 "http://172.16.100.106:80"
+                ],
+    "app_url": "http://192.168.56.102/prooffer",
+    "app_launcher":"http://192.168.56.102/prooffer/launch",
+	"projectsdb":"prooffer_projects",
+	"usersdb":"prooffer_users",
+	"datadb":"prooffer_data",
+	"admindatadb":"prooffer_data_admin",
+	"remote_projectsdb":"prooffer_projects_remote",
+	"remote_usersdb":"prooffer_users_remote",
+	"remote_datadb":"prooffer_data_remote",
+	"remote_admindatadb":"prooffer_data_admin_remote",
+	"test_admindb":"test_admin",
+	"test_datadb":"test_data",
+	"test_usersdb":"test_users",
+	"test_projectsdb":"test_projects"
+}

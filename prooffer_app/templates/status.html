@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+<button onclick="refresh()">Refresh</button>
+<div>
+	<p>Cache</p>
+	<div id="prooffer_cache"></div>
+</div>
+<table style="width:100%">
+<tr>
+<th>DATA</th><th>&nbsp;</th>
+<th>PROJECTS</th><th>&nbsp;</th>
+<th>USERS</th><th>&nbsp;</th>
+</tr>
+<tr>
+<th>Local</th><th>Remote</th>
+<th>Local</th><th>Remote</th>
+<th>Local</th><th>Remote</th>
+</tr>
+<tr>
+	<td>
+	<div id="prooffer_data_info"></div>
+	</td>
+	<td>
+	<div id="prooffer_data_remote_info"></div>
+	</td>
+	<td>
+	<div id="prooffer_projects_info"></div>
+	</td>
+	<td>
+	<div id="prooffer_projects_remote_info"></div>
+	</td>
+	<td>
+	<div id="prooffer_users_info"></div>
+	</td>
+	<td>
+	<div id="prooffer_users_remote_info"></div>
+	</td>
+</tr>
+</table>
+<div>
+	<p>TASKS</p>
+	<div id="tasks"></div>
+</div>
+<script type="text/javascript" src="/static/js/jquery-1.7.2.min.js"></script>
+<script type="text/javascript">
+
+	$.ajax({
+		type: "GET",
+		url: "readCachedParameters",
+	})
+	.done(function(response) {
+		response = JSON.parse(response); 
+		var content = '<table>';
+		$.each(response, function(i, doc) {
+			content += '<tr><td>' + doc._id + '</td><td>' + doc.value + '</td></tr>';
+		});
+		content += '</table>';
+		$(content).appendTo("#prooffer_cache");
+	});
+	
+	$.ajax({
+		type: "GET",
+		url: "getRemoteDBInfo/",
+		data: { dbname: "prooffer_data_remote_testing" }
+	})
+	.done(function(response){ 
+	  response = JSON.parse(response); 
+	  var content = enlist(response);
+	  $(content).appendTo("#prooffer_data_remote_info");
+	});
+	
+	$.ajax({
+		type: "GET",
+		url: "getRemoteDBInfo/",
+		data: { dbname: "prooffer_projects_remote_testing" }
+	})
+	.done(function(response){
+	  response = JSON.parse(response); 
+	  var content = enlist(response);
+	  $(content).appendTo("#prooffer_projects_remote_info");
+	});
+	
+	$.ajax({
+		type: "GET",
+		url: "getRemoteDBInfo/",
+		data: { dbname: "prooffer_users_remote_testing" }
+	})
+	.done(function(response){
+	  response = JSON.parse(response); 
+	  var content = enlist(response);
+	  $(content).appendTo("#prooffer_users_remote_info");
+	});
+
+</script>
+<script type="text/javascript">
+	var enlist = function(doc) {
+		var content = '<ul>';
+		for(var field in doc) content += '<li>' + field + ': ' + doc[field] + '</li>';			
+		content += '</ul>';
+		return content;
+	};
+	
+	var refresh = function() {
+		$("#tasks").empty();
+		$("#prooffer_data_info").empty();
+		$("#prooffer_projects_info").empty();
+		$("#prooffer_users_info").empty();
+		
+		$.ajax({
+			type: "GET",
+			url: "updateStatus"
+			
+		})
+		.done(function(response) {
+		    response = JSON.parse(response); 
+			var content = '';
+			$.each(response, function(i,task){
+				content += '<ul>';
+				content += '<li>pid: ' + task.pid + '</li>';
+				content += '<li>checkpointed_source_seq: ' + task.checkpointed_source_seq + '</li>';
+				content += '<li>doc_write_failures: ' + task.doc_write_failures + '</li>';
+				content += '<li>docs_read: ' + task.docs_read + '</li>';
+				content += '<li>docs_written: ' + task.docs_written + '</li>';
+				content += '<li>missing_revisions_found: ' + task.missing_revisions_found + '</li>';
+				content += '<li>progress: ' + task.progress + '</li>';
+				content += '<li>revisions_checked: ' + task.revisions_checked + '</li>';
+				content += '<li>source: ' + task.source + '</li>';
+				content += '<li>source_seq: ' + task.source_seq + '</li>';
+				content += '<li>target: ' + task.target + '</li>';
+				content += '<li>type: ' + task.type + '</li>';
+				content += '</ul>';
+            });
+			$(content).appendTo("#tasks");
+		});			
+		
+		$.ajax({
+			type: "GET",
+			url: "getDBInfo/",
+			data: { dbname: "prooffer_data" }
+		})
+		.done(function(response) { 
+		  response = JSON.parse(response); 
+		  var content = enlist(response);
+		  $(content).appendTo("#prooffer_data_info");
+		});
+		
+		$.ajax({
+			type: "GET",
+			url: "getDBInfo/",
+			data: { dbname: "prooffer_projects" }
+		})
+		.done(function(response) {
+		  response = JSON.parse(response); 
+		  var content = enlist(response);
+		  $(content).appendTo("#prooffer_projects_info");
+		});
+		
+		$.ajax({
+			type: "GET",
+			url: "getDBInfo/",
+			data: { dbname: "prooffer_users" }
+		})
+		.done(function(response) {
+		  response = JSON.parse(response); 
+		  var content = enlist(response);
+		  $(content).appendTo("#prooffer_users_info");
+		});
+	};
+	refresh();
+</script>
+</body>
+</html>
