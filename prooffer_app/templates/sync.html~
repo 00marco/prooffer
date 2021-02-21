@@ -74,7 +74,7 @@
 				if(failedSyncCount == 5){
 					$('#dropdownSummary').text('Offline mode');		
 				}
-				sync_status_2 = `Sync 2 status: ${xhr.responseText.split('\n\n')[0]}`;	
+				sync_status_2 = `Sync 2 status: ${xhr.responseText.split(' ')[0]}`;	
 			},
 			success: function(){
 				syncedCount = syncedCount + 1;
@@ -92,7 +92,7 @@
 				if(failedSyncCount == 5){
 					$('#dropdownSummary').text('Offline mode');		
 				}
-				sync_status_3 = `Sync 3 status: ${xhr.responseText.split('\n\n')[0]}`;		
+				sync_status_3 = `Sync 3 status: ${xhr.responseText.split(' ')[0]}`;		
 			},
 			success: function(){
 				syncedCount = syncedCount + 1;
@@ -110,7 +110,7 @@
 				if(failedSyncCount == 5){
 					$('#dropdownSummary').text('Offline mode');		
 				}
-				sync_status_4 = `Sync 4 status: ${xhr.responseText.split('\n\n')[0]}`;		
+				sync_status_4 = `Sync 4 status: ${xhr.responseText.split(' ')[0]}`;		
 			},
 			success: function(){
 				syncedCount = syncedCount + 1;
@@ -128,7 +128,7 @@
 				if(failedSyncCount == 5){
 					$('#dropdownSummary').text('Offline mode');		
 				}
-				sync_status_5 = `Sync 5 status: ${xhr.responseText.split('\n\n')[0]}`;		
+				sync_status_5 = `Sync 5 status: ${xhr.responseText.split(' ')[0]}`;		
 			},
 			success: function(){
 				syncedCount = syncedCount + 1;

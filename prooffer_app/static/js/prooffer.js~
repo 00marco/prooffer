@@ -83,8 +83,7 @@ function ProOffer() {
     var self = this;
 	
 	self.project = new Project();
-	self.isOnline = ko.observable(false);
-	prooffer_data.checkConnectivity()
+	
 	self.user = prooffer_data.getUserData();
 	self.privilege = prooffer_data.getUserPrivilegeData();
     

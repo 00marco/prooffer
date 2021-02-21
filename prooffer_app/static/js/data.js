@@ -17,6 +17,22 @@ function Data() {
 		return countries;
 	};
 
+	self.checkConnectivity = function() {
+		response = $.ajax({
+			type: "GET",
+			url: "machineData",
+			timeout: 10000,
+			async: false,
+			error: function() {
+				console.log("failed to connect");		
+			},
+			success: function() {
+				console.log("connection ok");			
+			}
+		});
+
+	};
+
     self.getCRMCustomerDetails = function() {
         return [
                 {
@@ -314,6 +330,8 @@ function Data() {
 			data: {command: "get"},
 			async: false
 		});
+		console.log("get user data");
+		console.log(response.responseText);
 		return eval(JSON.parse(response.responseText));
 	}
 	
@@ -363,6 +381,29 @@ function Data() {
 		self.generate(offer, "generateHandOver/", 'Hand Over' + ' ' + obj.reference);
 	}
 	
+	// gets the user with the specified code from the list of all users
+	self.getUserFromUserList = function(userListRawObject, code) {
+		var lastmodifiedbyUserFullDetails = []
+
+		for (var userIndex = 0; userIndex < userListRawObject.length; userIndex++){
+			
+			var rawArrayString = Object.values(userListRawObject[userIndex])[0];
+			var extractedObjectString = rawArrayString.substring(rawArrayString.indexOf("{") + 1, rawArrayString.indexOf("}"));
+
+			// JSON.parse was returning a string and not parsing it correctly so i did this instead
+			if (extractedObjectString.includes("sharewith") && extractedObjectString.includes(code)){
+				
+				// the following line just extracts the name from the array
+				var row = extractedObjectString.split(',')[2].split(':')[1].split("'").join('');
+				return row;			
+			}
+					
+				
+		}
+		
+		return {};
+	}	
+
 	self.getProjectList = function(projectList, userdata) {
         var map = 'function(doc) {\
                     if(doc.projectName) {\
@@ -376,7 +417,8 @@ function Data() {
                                                                 createdby: doc.createdby ? doc.createdby : "???",\
                                                                 lastmodified: doc.lastmodified ? doc.lastmodified : "0",\
                                                                 lastmodifiedby: doc.lastmodifiedby ? doc.lastmodifiedby : "???",\
-																ordcon: doc.ordcon ? 1 : 0,\
+								ordcon: doc.ordcon ? 1 : 0,\
+								signature: doc.signature ? doc.signature : "???",\
                                                                 });\
                    }}';
                    
@@ -389,14 +431,17 @@ function Data() {
         .done(function(data) {
             var rows = eval(data.replace(/u'/g,"'"));      
             var len = rows.length;
+		console.log("projectList");
             for(var i=len - 1; i >= 0; i--) {
+		console.log(rows[i]);
+		var userName = self.getUserFromUserList(rows[i].userList, rows[i].value.lastmodifiedby);
                 projectList.push({ projectName: rows[i].key, 
                                    companyName: rows[i].value.companyName,
                                    contactPerson: rows[i].value.contactPerson,
                                    country: rows[i].value.country, 
                                    createdby: rows[i].value.createdby,
                                    lastmodified: rows[i].value.lastmodified,
-                                   lastmodifiedby: rows[i].value.lastmodifiedby,
+                                   lastmodifiedby: userName,
                                    machineName: rows[i].value.machineName,
 								   ordcon: rows[i].value.ordcon,
 								   });

@@ -25,7 +25,7 @@ function Project(initData) {
 		//Additional
 		telNo : ko.observable(initData !== undefined ? initData.customerDetails.telNo : ''),
 		email : ko.observable(initData !== undefined ? initData.customerDetails.email : ''),
-		website : ko.observable(initData !== undefined ? initData.customerDetails.website : 'website'),
+		website : ko.observable(initData !== undefined ? initData.customerDetails.website : ''),
 	};
 	
 	self.machine = {

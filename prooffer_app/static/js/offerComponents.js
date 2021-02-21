@@ -13,12 +13,12 @@ function Project(initData) {
 		companyName : ko.observable(initData !== undefined ? initData.customerDetails.companyName : ''),
         companyLogo : ko.observable(initData !== undefined ? initData.customerDetails.companyLogo : ''),
 		//Contact
-		contactPerson : ko.observable(initData !== undefined ? initData.customerDetails.contactPerson: 'contactperson'),
+		contactPerson : ko.observable(initData !== undefined ? initData.customerDetails.contactPerson: ''),
 		gender : ko.observable(initData !== undefined ? initData.customerDetails.gender : ''),
 		//Address
-		fullAddress : ko.observable(initData !== undefined ? initData.customerDetails.fullAddress : 'fulladdress'),
+		fullAddress : ko.observable(initData !== undefined ? initData.customerDetails.fullAddress : ''),
 		city : ko.observable(initData !== undefined ? initData.customerDetails.city : ''),
-		postalCode : ko.observable(initData !== undefined ? initData.customerDetails.postalCode : 'postalcode'),
+		postalCode : ko.observable(initData !== undefined ? initData.customerDetails.postalCode : ''),
 		poBox : ko.observable(initData !== undefined ? initData.customerDetails.poBox : ''),
 		state : ko.observable(initData !== undefined ? initData.customerDetails.state : ''),
 		country : ko.observable(initData !== undefined ? initData.customerDetails.country : ''),

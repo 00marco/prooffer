@@ -15,8 +15,8 @@
                 <span data-bind="if: machineName" class="spacer">:</span>
                 <span data-bind="text: machineName"></span>
             </div>
-            <div style="float:right;width:250px;height:25px;color:white;margin:0px;padding:0px">
-                <iframe style="width:100%;height:100%" scrolling="no" src="sync"></iframe>
+            <div style="float:right;width:400px;height:25px;color:white;margin:0px;padding:0px">
+                <iframe id="sync_iframe" style="width:100%;height:100%" scrolling="no" src="sync"></iframe>
             </div>
         </div>
         <div data-bind="if: hasStarted" class="navigation full-width">
@@ -59,7 +59,7 @@
 							<div class="header-text" >Last Modified</div>
 						</li>
 						<li style="width:20%">
-							<div class="header-text">User Code</div>
+							<div class="header-text">User</div>
 							<div>
 								<select style="width:100%" data-bind="value: startOptions.creatorFilter, options: startOptions.creators"></select>
 							</div>
@@ -115,7 +115,7 @@
 								<li style="width:10%" data-bind="css: { selected: $data.projectName == $parent.startOptions.selectedQuote() },
 													  click: $parent.startOptions.selectExistingQuote,
 													  text: $data.lastmodifiedby + '@' + $data.lastmodified">
-                                </li>
+                                </li>`
 								<li style="width:20%" data-bind="css: { selected: $data.projectName == $parent.startOptions.selectedQuote() },
 													  click: $parent.startOptions.selectExistingQuote,
 													  text: $data.projectName">
@@ -1125,5 +1125,15 @@
 	<script type="text/javascript" src="/static/js/data.js"></script>
 	<script type="text/javascript" src="/static/js/offerComponents.js"></script>
 	<script type="text/javascript" src="/static/js/prooffer.js"></script>
+	<script type="text/javascript">
+		window.onload = function() {
+			document.getElementById("sync_iframe").contentDocument.getElementById("dropdownSummary").click(
+				function() {
+					console.log("sync button clicked");
+				}
+			);
+		}
+		
+	</script>
 </body>
 </html>
